@@ -29,11 +29,16 @@ public class Gui extends JFrame
     { 
         "Opcion A","Opcion B","Opcion C", "Acerca de"
     };
+
     private static String itemsMenu[] = 
     { 
         "Sección 1A","Sección 1B", "Sección 1C", "Ayuda"
     };
 
+    private static String opciones[] = 
+    { 
+        "Opcion 1A","Opcion 1B", "Opcion 1C"
+    };
     //crea nuevo JDialog por cada boton
     class ButtonListener implements ActionListener 
     {
@@ -79,15 +84,20 @@ public class Gui extends JFrame
     {
         JMenuBar mb = new JMenuBar();
         JMenu menu;
+        JMenu submenu;
         JMenuItem item;
-        for(int i = 0; i < itemsMenu.length; i++) 
+        for(int i = 0; i < itemsMenu.length-1; i++) 
         {
             //itemsMenu[i].addActionListener(al);
             menu = new JMenu(menus[i]);
-            menu.add(itemsMenu[i]).addActionListener(al);
+            submenu = new JMenu(opciones[i]);
+            submenu.add(new JMenuItem(itemsMenu[i])).addActionListener(al);
+            menu.add(submenu);
             mb.add(menu);
         }
-        
+        menu = new JMenu(menus[itemsMenu.length-1]);
+        menu.add(itemsMenu[itemsMenu.length-1]).addActionListener(al);
+        mb.add(menu).addActionListener(al);;
         return mb;
     }
 
