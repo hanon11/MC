@@ -4,7 +4,8 @@ import javax.swing.*;
 
 public class randomGenerator extends JFrame 
 {
-
+    private int n_puntos = 1000;
+    private int generador_escogido;
     private static String menus[] = 
     { 
         "Opción A","Opción B","Opción C", "Acerca de"
@@ -17,7 +18,12 @@ public class randomGenerator extends JFrame
 
     private static String opciones[] = 
     { 
-        "26.1a", "26.1b", "26.2", "26.3"
+        "Opción 1A","Opción 1B", "Opción 1C"
+    };
+
+    private static String generadores[] = 
+    { 
+        "26.1a", "26.1b", "26.2", "26.3", "Combinado", "Fishman y Moore", "RANDU"
     };
 
     static JFrame f;
@@ -54,27 +60,11 @@ public class randomGenerator extends JFrame
         JPanel panelBotones = new JPanel();
         SpringLayout layout = new SpringLayout();
         panelBotones.setLayout(layout);
-        
-        //coloco el primer boton en base al panel
-        JButton b1 = new JButton(botones[0]), b2;
-        b1.addActionListener(bl);
-        b1.setPreferredSize(new Dimension(150, 27));
-        panelBotones.add(b1);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, b1, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, b1, 30, SpringLayout.NORTH, panelBotones);
-        
-        //coloco el resto de botones en base al anterior colocado
-        for(int i = 1; i < botones.length; i++)
-        {
-            b2 = new JButton(botones[i]);
-            b2.setPreferredSize(new Dimension(150, 27));
-            b2.addActionListener(bl);
-            
-            panelBotones.add(b2);
-            layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, b2, 0, SpringLayout.HORIZONTAL_CENTER, b1);
-            layout.putConstraint(SpringLayout.NORTH, b2, 45, SpringLayout.NORTH, b1);
-            b1 = b2;
-        }
+        Choice ch = new Choice();
+        for(int i = 0; i < generadores.length; i++) 
+            ch.addItem(generadores[i]);
+        generador_escogido = ch.getSelectedIndex();
+        panelBotones.add(ch);
         return panelBotones;
     }
 
@@ -110,13 +100,104 @@ public class randomGenerator extends JFrame
         
         add(crearPanelBotones()); //panel botones
 
-        JButton image = new JButton(new ImageIcon(getClass().getResource("grogu.jpg"))); 
-        add(BorderLayout.WEST, image);
+        //JButton image = new JButton(new ImageIcon(getClass().getResource("grogu.jpg"))); 
+        //add(BorderLayout.WEST, image);
+    }
+
+    public double[] veintiseis1a()
+    {
+        double[] aleatorios = new double[n_puntos];
+        double x0 = 1;
+        for(int i = 0; i < n_puntos; i++)
+        {
+            aleatorios[i] = 5 * x0 % 2e5;
+            x0 = aleatorios[i]; 
+            aleatorios[i] /= 2e5; 
+        }
+        return aleatorios;
+    }
+
+    public double[] veintiseis1b()
+    {
+        double[] aleatorios = new double[n_puntos];
+        double x0 = 1;
+        for(int i = 0; i < n_puntos; i++)
+        {
+            aleatorios[i] = 7 * x0 % 2e5;
+            x0 = aleatorios[i]; 
+            aleatorios[i] /= 2e5; 
+        }
+        return aleatorios;
+    }
+
+    public double[] veintiseis2()
+    {
+        double[] aleatorios = new double[n_puntos];
+        double x0 = 1;
+        for(int i = 0; i < n_puntos; i++)
+        {
+            aleatorios[i] = 3 * x0 % 31;
+            x0 = aleatorios[i]; 
+            aleatorios[i] /= 31; 
+        }
+        return aleatorios;
+    }
+
+    public double[] veintiseis3()
+    {
+        double[] aleatorios = new double[n_puntos];
+        double x0 = 1;
+        for(int i = 0; i < n_puntos; i++)
+        {
+            aleatorios[i] = 7e5 * x0 % (2e31 -1);
+            x0 = aleatorios[i]; 
+            aleatorios[i] /= (2e31 -1); 
+        }
+        return aleatorios;
+    }
+
+    public double[] FishmanMoore1()
+    {
+        double[] aleatorios = new double[n_puntos];
+        double x0 = 1;
+        for(int i = 0; i < n_puntos; i++)
+        {
+            aleatorios[i] = 48271 * x0 % (2e31 -1);
+            x0 = aleatorios[i]; 
+            aleatorios[i] /= (2e31 -1); 
+        }
+        return aleatorios;
+    }
+
+    public double[] FishmanMoore2()
+    {
+        double[] aleatorios = new double[n_puntos];
+        double x0 = 1;
+        for(int i = 0; i < n_puntos; i++)
+        {
+            aleatorios[i] = 69621 * x0 % (2e31 -1);
+            x0 = aleatorios[i]; 
+            aleatorios[i] /= (2e31 -1); 
+        }
+        return aleatorios;
+    }
+
+    public double[] RANDU()
+    {
+        double[] aleatorios = new double[n_puntos];
+        double x0 = 1;
+        for(int i = 0; i < n_puntos; i++)
+        {
+            aleatorios[i] = (2e16+3)* x0 % (2e31);
+            x0 = aleatorios[i]; 
+            aleatorios[i] /= (2e31); 
+        }
+        return aleatorios;
     }
 
     public static void main(String args[]) 
     {
-        Gui frame = new Gui("Generador de números aleatorios");
+        randomGenerator frame = new randomGenerator("Generador de números aleatorios");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
         frame.setSize(700, 600);
         frame.setVisible(true); 
