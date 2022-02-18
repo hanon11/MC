@@ -59,12 +59,29 @@ public class randomGenerator extends JFrame
     {
         JPanel panelBotones = new JPanel();
         SpringLayout layout = new SpringLayout();
+        JTextField tf = new JTextField(15);
         panelBotones.setLayout(layout);
         Choice ch = new Choice();
+        JLabel label = new JLabel("Generador de números aleatorios");   
+        panelBotones.add(label);   
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
+        layout.putConstraint(SpringLayout.NORTH, label, 30, SpringLayout.NORTH, panelBotones);
+         
         for(int i = 0; i < generadores.length; i++) 
             ch.addItem(generadores[i]);
         generador_escogido = ch.getSelectedIndex();
         panelBotones.add(ch);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, ch, 0, SpringLayout.HORIZONTAL_CENTER, label);
+        layout.putConstraint(SpringLayout.NORTH, ch, 30, SpringLayout.NORTH, label);
+
+        JLabel label2 = new JLabel("Números de dígitos aleatorios");  
+        panelBotones.add(label2);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label2, 0, SpringLayout.HORIZONTAL_CENTER, ch);
+        layout.putConstraint(SpringLayout.NORTH, label2, 30, SpringLayout.NORTH, ch);
+        panelBotones.add(tf);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, tf, 0, SpringLayout.HORIZONTAL_CENTER, label2);
+        layout.putConstraint(SpringLayout.NORTH, tf, 30, SpringLayout.NORTH, label2);
+
         return panelBotones;
     }
 
