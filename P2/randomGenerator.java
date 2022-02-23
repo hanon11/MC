@@ -16,10 +16,10 @@ import java.math.BigInteger;
 
 public class randomGenerator extends JFrame 
 {
-    private int n_puntos;
-    private int generador_escogido;
-    private double[] vector_puntos;
-    private static JPanel grafica;
+    private static int n_puntos;
+    private static int generador_escogido;
+    private static double[] vector_puntos;
+    private static BigInteger[] vector_puntos2;
     private static String menus[] = 
     { 
         "Opción A","Opción B","Opción C", "Acerca de"
@@ -109,8 +109,7 @@ public class randomGenerator extends JFrame
         public void paint(Graphics g) 
         {
             Image img = createImageWithText();
-            g.drawImage(img, 20, 50, this);
-            this.setPreferredSize( new Dimension( 400, 300 ) );
+            g.drawImage(img, 20,50,this);
         }
 
         private Image createImageWithText() 
@@ -124,11 +123,13 @@ public class randomGenerator extends JFrame
             int i = 0;
             while(i < n_puntos)
             {
-                x = (int)vector_puntos[i];
-                y = (int)vector_puntos[i+1];
+                x = (int)vector_puntos[i] % 700;
+                y = (int)vector_puntos[i+1] % 370;
                 i += 2;
                 //System.out.println(i);
-                g.drawLine(x, y, x, y);  // o tambien...
+                //g.drawLine(x, y, x, y);  // o tambien...
+                g.drawOval(x, alto-y, 3, 3);
+                g.fillOval(x, alto-y, 3, 3);
             } 
             return bufferedImage;
         }
@@ -218,8 +219,7 @@ public class randomGenerator extends JFrame
         f = this;
         setJMenuBar(SimpleMenus()); //crear menu
         add(crearPanelBotones(), BorderLayout.EAST); //panel botones
-        grafica = new Puntos();
-        add(grafica, BorderLayout.CENTER);    
+        add(new Puntos(), BorderLayout.CENTER);    
     }
 
     public double[] veintiseis1a()
