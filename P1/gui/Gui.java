@@ -112,10 +112,10 @@ public class Gui extends JFrame
 
         setJMenuBar(SimpleMenus()); //crear menu
         
-        add(crearPanelBotones()); //panel botones
+        add(BorderLayout.EAST, crearPanelBotones()); //panel botones
 
         JButton image = new JButton(new ImageIcon(getClass().getResource("grogu.jpg"))); 
-        add(BorderLayout.WEST, image);
+        //add(BorderLayout.WEST, image);
     }
 
     public static void main(String args[]) 
