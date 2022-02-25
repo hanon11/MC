@@ -18,8 +18,10 @@ public class randomGenerator extends JFrame
 {
     private static int n_puntos;
     private static int generador_escogido;
-    private static double[] vector_puntos;
+    private static BigInteger[] vector_puntos;
     private static BigInteger[] vector_puntos2;
+    private static JPanel panel;
+    private static Graphics g;
     private static String menus[] = 
     { 
         "Opción A","Opción B","Opción C", "Acerca de"
@@ -37,7 +39,76 @@ public class randomGenerator extends JFrame
 
     private static String generadores[] = 
     { 
-        "26.1a", "26.1b", "26.2", "26.3", "Combinado", "Fishman y Moore", "RANDU"
+        "26.1a", "26.1b", "26.2", "26.3", "Combinado", "Fishman", "Moore", "RANDU"
+    };
+
+    public class Puntos extends JPanel 
+    {
+        public void paint(Graphics g) 
+        {
+            Image img = createImageWithText();
+            g.drawImage(img, 20,50,this);
+        }
+
+        public static Image createImageWithText() 
+        {
+            int ancho      = 700;
+            int alto       = 370;
+            BufferedImage bufferedImage = new BufferedImage( ancho, alto, BufferedImage.TYPE_INT_RGB );
+            g = bufferedImage.getGraphics();
+            g.setColor(Color.BLUE);
+            int x, y;
+            int i = 0;
+            switch(generador_escogido)
+            {
+                case 0:
+                    vector_puntos = veintiseis1a();
+                    //System.out.println(Arrays.toString(vector_puntos));
+                    break;
+                case 1:
+                    vector_puntos = veintiseis1b();
+                    //System.out.println(Arrays.toString(vector_puntos));
+                    break;
+                case 2:
+                    vector_puntos = veintiseis2();
+                    //System.out.println(Arrays.toString(vector_puntos));
+                    break;
+                case 3:
+                    vector_puntos = veintiseis3();
+                    //System.out.println(Arrays.toString(vector_puntos));
+                    break;
+                case 4:
+                    vector_puntos = combinado();
+                    //System.out.println(Arrays.toString(vector_puntos));
+                    break;
+                case 5:
+                    vector_puntos = Fishman();
+                    //System.out.println(Arrays.toString(vector_puntos));
+                    break;
+                case 6:
+                    vector_puntos = Moore();
+                    //System.out.println(Arrays.toString(vector_puntos));
+                    break;
+                case 7:
+                    vector_puntos = RANDU();
+                    //System.out.println(Arrays.toString(vector_puntos));
+                    break;
+                default:
+                    break;
+            }
+            
+            while(i < n_puntos)
+            {
+                x = vector_puntos[i].intValue() % 700;
+                y = vector_puntos[i+1].intValue() % 370;
+                i += 2;
+                //System.out.println(i);
+                //g.drawLine(x, y, x, y);  // o tambien...
+                g.drawOval(x, alto-y, 3, 3);
+                g.fillOval(x, alto-y, 3, 3);
+            } 
+            return bufferedImage;
+        }
     };
 
     static JFrame f;
@@ -50,43 +121,23 @@ public class randomGenerator extends JFrame
             String name = ((JButton)e.getSource()).getText();  
             if(name.equals("Generar"))
             {
-                switch(generador_escogido)
+                Image img = Puntos.createImageWithText();
+                g.drawImage(img, 0, 0, null);
+                panel.setVisible(false);
+                panel.setVisible(true);
+                g.setColor(Color.white);
+               //generamos y pintamos puntos...
+                int i = 0, x, y;
+                while(i < n_puntos)
                 {
-                case 0:
-                    vector_puntos = veintiseis1a();
-                    System.out.println(Arrays.toString(vector_puntos));
-                    break;
-                case 1:
-                    vector_puntos = veintiseis1b();
-                    System.out.println(Arrays.toString(vector_puntos));
-                    break;
-                case 2:
-                    vector_puntos = veintiseis2();
-                    System.out.println(Arrays.toString(vector_puntos));
-                    break;
-                case 3:
-                    vector_puntos = veintiseis3();
-                    System.out.println(Arrays.toString(vector_puntos));
-                    break;
-                case 4:
-                    vector_puntos = veintiseis3();
-                    System.out.println(Arrays.toString(vector_puntos));
-                    break;
-                case 5:
-                    vector_puntos = combinado();
-                    System.out.println(Arrays.toString(vector_puntos));
-                    break;
-                case 6:
-                    vector_puntos = FishmanMoore();
-                    System.out.println(Arrays.toString(vector_puntos));
-                    break;
-                case 7:
-                    vector_puntos = RANDU();
-                    System.out.println(Arrays.toString(vector_puntos));
-                    break;
-                default:
-                    break;
-                }
+                    x = vector_puntos[i].intValue() % 700;
+                    y = vector_puntos[i+1].intValue() % 370;
+                    i += 2;
+                    //System.out.println(i);
+                    //g.drawLine(x, y, x, y);  // o tambien...
+                    g.drawOval(x, 370-y, 3, 3);
+                    g.fillOval(x, 370-y, 3, 3);
+                } 
             }
         }
     }
@@ -104,36 +155,7 @@ public class randomGenerator extends JFrame
         }
     };
 
-    public class Puntos extends JPanel 
-    {
-        public void paint(Graphics g) 
-        {
-            Image img = createImageWithText();
-            g.drawImage(img, 20,50,this);
-        }
-
-        private Image createImageWithText() 
-        {
-            int ancho      = 700;
-            int alto       = 370;
-            BufferedImage bufferedImage = new BufferedImage( ancho, alto, BufferedImage.TYPE_INT_RGB );
-            Graphics g = bufferedImage.getGraphics();
-            g.setColor(Color.BLUE);
-            int x, y;
-            int i = 0;
-            while(i < n_puntos)
-            {
-                x = (int)vector_puntos[i] % 700;
-                y = (int)vector_puntos[i+1] % 370;
-                i += 2;
-                //System.out.println(i);
-                //g.drawLine(x, y, x, y);  // o tambien...
-                g.drawOval(x, alto-y, 3, 3);
-                g.fillOval(x, alto-y, 3, 3);
-            } 
-            return bufferedImage;
-        }
-    };
+    
     
 
     private JPanel crearPanelBotones()
@@ -167,7 +189,7 @@ public class randomGenerator extends JFrame
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label2, 0, SpringLayout.HORIZONTAL_CENTER, ch);
         layout.putConstraint(SpringLayout.NORTH, label2, 30, SpringLayout.NORTH, ch);
 
-        JSpinner spinner = new JSpinner(new SpinnerNumberModel(0, 0, 9999, 1));
+        JSpinner spinner = new JSpinner(new SpinnerNumberModel(0, 0, 9999999, 1));
         spinner.setSize(70, 10);
         spinner.addChangeListener(new ChangeListener() 
         {
@@ -219,97 +241,119 @@ public class randomGenerator extends JFrame
         f = this;
         setJMenuBar(SimpleMenus()); //crear menu
         add(crearPanelBotones(), BorderLayout.EAST); //panel botones
-        add(new Puntos(), BorderLayout.CENTER);    
+        panel = new Puntos();
+        add(panel, BorderLayout.CENTER);    
     }
 
-    public double[] veintiseis1a()
+    public static BigInteger[] veintiseis1a()
     {
-        double[] aleatorios = new double[n_puntos];
-        double x0 = 1;
+        BigInteger[] aleatorios = new BigInteger[n_puntos];
+        BigInteger x0 = BigInteger.ONE;
         //System.out.println(n_puntos);
         for(int i = 0; i < n_puntos; i++)
         {
-            aleatorios[i] = 5 * x0 % 2e5;
+            aleatorios[i] = x0.multiply(BigInteger.valueOf(5));
+            aleatorios[i] = aleatorios[i].mod(BigInteger.valueOf((int)2e5));
             x0 = aleatorios[i]; 
         }
         return aleatorios;
     }
 
-    public double[] veintiseis1b()
+    public static BigInteger[] veintiseis1b()
     {
-        double[] aleatorios = new double[n_puntos];
-        double x0 = 1;
+        BigInteger[] aleatorios = new BigInteger[n_puntos];
+        BigInteger x0 = BigInteger.ONE;
         for(int i = 0; i < n_puntos; i++)
         {
-            aleatorios[i] = 7 * x0 % 2e5;
+            aleatorios[i] = x0.multiply(BigInteger.valueOf(7));
+            aleatorios[i] = aleatorios[i].mod(BigInteger.valueOf((int)2e5));
             x0 = aleatorios[i]; 
         }
         return aleatorios;
     }
 
-    public double[] veintiseis2()
+    public static BigInteger[] veintiseis2()
     {
-        double[] aleatorios = new double[n_puntos];
-        double x0 = 1;
+        BigInteger[] aleatorios = new BigInteger[n_puntos];
+        BigInteger x0 = BigInteger.ONE;
         for(int i = 0; i < n_puntos; i++)
         {
-            aleatorios[i] = 3 * x0 % 31;
+            aleatorios[i] = x0.multiply(BigInteger.valueOf(3));
+            aleatorios[i] = aleatorios[i].mod(BigInteger.valueOf(31));
             x0 = aleatorios[i]; 
             //aleatorios[i] /= 31; 
         }
         return aleatorios;
     }
 
-    public double[] veintiseis3()
+    public static BigInteger[] veintiseis3()
     {
-        double[] aleatorios = new double[n_puntos];
-        double x0 = 1;
+        BigInteger[] aleatorios = new BigInteger[n_puntos];
+        BigInteger x0 = BigInteger.ONE;
         for(int i = 0; i < n_puntos; i++)
         {
-            aleatorios[i] = 7e5 * x0 % (2e31 -1);
+            aleatorios[i] = x0.multiply(BigInteger.valueOf((long)7e5));
+            aleatorios[i] = aleatorios[i].mod(BigInteger.valueOf((long)(2e31 -1)));
             x0 = aleatorios[i]; 
             //aleatorios[i] /= (2e31 -1); 
         }
         return aleatorios;
     }
 
-    public double[] combinado()
+    public static BigInteger[] combinado()
     {
-        double[] aleatorios = new double[n_puntos];
-        double wn = 1, xn = 1, yn = 1;
+        BigInteger[] aleatorios = new BigInteger[n_puntos];
+        BigInteger wn = BigInteger.ONE, xn = BigInteger.ONE, yn = BigInteger.ONE;
         for(int i = 0; i < n_puntos; i++)
         {
-            wn = 157*wn % 32363;
-            xn = 146*xn % 31727;
-            yn = 142*yn % 31657;
-            aleatorios[i] = (wn - xn + yn) % 32362;
+            wn = wn.multiply(BigInteger.valueOf(157));
+            wn = wn.mod(BigInteger.valueOf(32363));
+            xn = xn.multiply(BigInteger.valueOf(146));
+            xn = xn.mod(BigInteger.valueOf(31727));
+            yn = yn.multiply(BigInteger.valueOf(142));
+            yn = yn.mod(BigInteger.valueOf(31657));
+            aleatorios[i] = (wn.subtract(xn).add(yn)); 
+            aleatorios[i] = aleatorios[i].mod(BigInteger.valueOf(32362));
         }
         return aleatorios;
     }
 
-    public double[] FishmanMoore()
+    public static BigInteger[] Fishman()
     {
-        double[] aleatorios = new double[n_puntos];
-        double x0 = 1;
+        BigInteger[] aleatorios = new BigInteger[n_puntos];
+        BigInteger x0 = BigInteger.ONE;
         for(int i = 0; i < n_puntos; i++)
         {
-            aleatorios[i] = 630360016 * x0 % (2e31 -1);
+            aleatorios[i] = x0.multiply(BigInteger.valueOf(48271));
+            aleatorios[i] = aleatorios[i].mod(BigInteger.valueOf((long)(2e31 -1)));
             x0 = aleatorios[i]; 
-            //aleatorios[i] /= (2e31 -1); 
+        }
+        return aleatorios;
+    }
+
+    public static BigInteger[] Moore()
+    {
+        BigInteger[] aleatorios = new BigInteger[n_puntos];
+        BigInteger x0 = BigInteger.ONE;
+        for(int i = 0; i < n_puntos; i++)
+        {
+            aleatorios[i] = x0.multiply(BigInteger.valueOf(69621));
+            aleatorios[i] = aleatorios[i].mod(BigInteger.valueOf((long)(2e31 -1)));
+            x0 = aleatorios[i]; 
         }
         return aleatorios;
     }
 
 
-    public double[] RANDU()
+    public static BigInteger[] RANDU()
     {
-        double[] aleatorios = new double[n_puntos];
-        double x0 = 1;
+        BigInteger[] aleatorios = new BigInteger[n_puntos];
+        BigInteger x0 = BigInteger.ONE;
         for(int i = 0; i < n_puntos; i++)
         {
-            aleatorios[i] = (2e16+3)* x0 % (2e31);
+            aleatorios[i] = x0.multiply(BigInteger.valueOf((long)(2e16+3)));
+            aleatorios[i] = aleatorios[i].mod(BigInteger.valueOf((long)2e31));
             x0 = aleatorios[i]; 
-            //aleatorios[i] /= (2e31); 
         }
         return aleatorios;
     }
