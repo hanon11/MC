@@ -156,7 +156,6 @@ public class randomGenerator extends JFrame
     };
 
     
-    
 
     private JPanel crearPanelBotones()
     {
