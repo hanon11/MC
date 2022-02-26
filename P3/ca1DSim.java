@@ -16,6 +16,8 @@ import javax.swing.event.ChangeEvent;
 public class ca1DSim extends JFrame 
 {
     private static int conf_escogida;
+    private static int n_generaciones;
+    private static int n_vecinos;
     private static int n_estados;
     private static JPanel panel;
     private static Graphics g;
@@ -37,6 +39,10 @@ public class ca1DSim extends JFrame
     private static String configuracion[] = 
     { 
         "Aleatoria", "Celula central activa"
+    };
+    private static String estados[] = 
+    { 
+        "2 estados", "3 estados", "4 estados", "5 estados"
     };
 
     public class Puntos extends JPanel 
@@ -69,7 +75,18 @@ public class ca1DSim extends JFrame
         public void actionPerformed(ActionEvent e) 
         {
             String name = ((JButton)e.getSource()).getText();  
-            if(name.equals("Generar"))
+            if(name.equals("Start"))
+            {
+                Image img = Puntos.createImageWithText();
+                g.drawImage(img, 0, 0, null);
+                panel.setVisible(false);
+                panel.setVisible(true);
+                g.setColor(Color.white);
+               //generamos y pintamos puntos...
+                int i = 0, x, y;
+                
+            }
+            if(name.equals("Reset"))
             {
                 Image img = Puntos.createImageWithText();
                 g.drawImage(img, 0, 0, null);
@@ -104,13 +121,14 @@ public class ca1DSim extends JFrame
         panelBotones.setLayout(layout);
         panelBotones.setPreferredSize( new Dimension( 340, 280 ) );
         Choice ch = new Choice();
-        JLabel label = new JLabel("Configuracion inicial:");   
+        JLabel label = new JLabel("Configuracion:");   
         panelBotones.add(label);   
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, label, 170, SpringLayout.NORTH, panelBotones);
+        layout.putConstraint(SpringLayout.NORTH, label, 100, SpringLayout.NORTH, panelBotones);
          
         for(int i = 0; i < configuracion.length; i++) 
             ch.addItem(configuracion[i]);
+        
         ch.addItemListener(new ItemListener()
         {
             public void itemStateChanged(ItemEvent e)
@@ -128,25 +146,71 @@ public class ca1DSim extends JFrame
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label2, 0, SpringLayout.HORIZONTAL_CENTER, ch);
         layout.putConstraint(SpringLayout.NORTH, label2, 30, SpringLayout.NORTH, ch);
 
-        JSpinner spinner = new JSpinner(new SpinnerNumberModel(2, 2, 5, 1));
-        spinner.setSize(70, 10);
-        spinner.addChangeListener(new ChangeListener() 
+
+        JComboBox combo = new JComboBox();
+        for(int i = 0; i < estados.length; i++) 
+            combo.addItem(estados[i]);
+        combo.addActionListener(new ActionListener() 
         {
-            public void stateChanged(ChangeEvent e) 
+            public void actionPerformed(ActionEvent e) 
             {
-                n_estados = (int)spinner.getValue();
+                n_estados = (int)combo.getSelectedIndex(); // 0 -> 2 estados ... 3 -> 5 estados
             }
         });
 
-        panelBotones.add(spinner);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, spinner, 0, SpringLayout.HORIZONTAL_CENTER, label2);
-        layout.putConstraint(SpringLayout.NORTH, spinner, 30, SpringLayout.NORTH, label2);
+        panelBotones.add(combo);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, combo, 0, SpringLayout.HORIZONTAL_CENTER, label2);
+        layout.putConstraint(SpringLayout.NORTH, combo, 30, SpringLayout.NORTH, label2);
 
-        JButton b1 = new JButton("Generar");
+
+        JLabel label3 = new JLabel("Numero de generaciones:");  
+        panelBotones.add(label3);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label3, 0, SpringLayout.HORIZONTAL_CENTER, combo);
+        layout.putConstraint(SpringLayout.NORTH, label3, 30, SpringLayout.NORTH, combo);
+
+        JSpinner spinner2 = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+        spinner2.setSize(70, 10);
+        spinner2.addChangeListener(new ChangeListener() 
+        {
+            public void stateChanged(ChangeEvent e) 
+            {
+                n_generaciones = (int)spinner2.getValue();
+            }
+        });
+
+        panelBotones.add(spinner2);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, spinner2, 0, SpringLayout.HORIZONTAL_CENTER, label3);
+        layout.putConstraint(SpringLayout.NORTH, spinner2, 30, SpringLayout.NORTH, label3);
+
+        JLabel label4 = new JLabel("Numero de vecinos:");  
+        panelBotones.add(label4);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label4, 0, SpringLayout.HORIZONTAL_CENTER, spinner2);
+        layout.putConstraint(SpringLayout.NORTH, label4, 30, SpringLayout.NORTH, spinner2);
+
+        JSpinner spinner3 = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+        spinner3.setSize(70, 10);
+        spinner3.addChangeListener(new ChangeListener() 
+        {
+            public void stateChanged(ChangeEvent e) 
+            {
+                n_vecinos = (int)spinner3.getValue();
+            }
+        });
+
+        panelBotones.add(spinner3);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, spinner3, 0, SpringLayout.HORIZONTAL_CENTER, label4);
+        layout.putConstraint(SpringLayout.NORTH, spinner3, 30, SpringLayout.NORTH, label4);
+
+        JButton b1 = new JButton("Start");
         b1.addActionListener(bl);
         panelBotones.add(b1);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, b1, 0, SpringLayout.HORIZONTAL_CENTER, spinner);
-        layout.putConstraint(SpringLayout.NORTH, b1, 30, SpringLayout.NORTH, spinner);
+        layout.putConstraint(SpringLayout.EAST, b1, -180, SpringLayout.EAST, panelBotones);
+        layout.putConstraint(SpringLayout.NORTH, b1, 60, SpringLayout.NORTH, spinner3);
+        JButton b2 = new JButton("Reset");
+        b2.addActionListener(bl);
+        panelBotones.add(b2);
+        layout.putConstraint(SpringLayout.EAST, b2, -100, SpringLayout.EAST, panelBotones);
+        layout.putConstraint(SpringLayout.NORTH, b2, 60, SpringLayout.NORTH, spinner3);
 
         return panelBotones;
     }
