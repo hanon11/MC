@@ -17,10 +17,49 @@ public class ca1DSim extends JFrame
 {
     private static int conf_escogida;
     private static int n_generaciones;
-    private static int n_vecinos;
+    private static int n_vecinos = 1;
     private static int n_estados;
+    private static int regla;
+    private static int posibles_estados = 3 * n_estados - 2;
+    private static int[] code;
+    private static int[] t_1 = {0,0,0,1,0,0,0}, actual = {0,0,0,1,0,0,0};
     private static JPanel panel;
     private static Graphics g;
+
+    public static void calcular_estado_actual()
+    {
+        int sumatorio;
+        for(int k = 0; k < n_generaciones; k++)
+        {
+            for(int i = 0; i < actual.length; i++)
+            {
+                sumatorio = 0;
+                for(int j = i-n_vecinos; j <= i+n_vecinos; j++)
+                {
+                    if(j < 0)
+                        sumatorio += t_1[t_1.length+j];
+                    else if(j > t_1.length-1) 
+                        sumatorio += t_1[j-t_1.length];
+                    else 
+                        sumatorio += t_1[j];
+                }
+                //System.out.println(sumatorio);
+                actual[i] = code[sumatorio % posibles_estados]; //para que no se salga del vector
+            }
+            for(int i = 0; i < actual.length; i++)
+                t_1[i] = actual[i];
+            System.out.println(Arrays.toString(actual));
+        }
+    }
+    public static void reset()
+    {
+        int[] aux = {0,0,0,1,0,0,0};
+        for(int i = 0; i < aux.length; i++)
+                t_1[i] = aux[i];
+        for(int i = 0; i < aux.length; i++)
+                actual[i] = aux[i];
+    }
+
     private static String menus[] = 
     { 
         "Opción A","Opción B","Opción C", "Acerca de"
@@ -45,12 +84,17 @@ public class ca1DSim extends JFrame
         "2 estados", "3 estados", "4 estados", "5 estados"
     };
 
+    private void pasar_a_baseK()
+    {
+        code = new int[posibles_estados];
+    }
+
     public class Puntos extends JPanel 
     {
         public void paint(Graphics g) 
         {
             Image img = createImageWithText();
-            g.drawImage(img, 20,50,this);
+            g.drawImage(img, 20,90,this);
         }
 
         public static Image createImageWithText() 
@@ -84,6 +128,7 @@ public class ca1DSim extends JFrame
                 g.setColor(Color.white);
                //generamos y pintamos puntos...
                 int i = 0, x, y;
+                calcular_estado_actual();
                 
             }
             if(name.equals("Reset"))
@@ -95,6 +140,7 @@ public class ca1DSim extends JFrame
                 g.setColor(Color.white);
                //generamos y pintamos puntos...
                 int i = 0, x, y;
+                reset();
                 
             }
         }
@@ -112,7 +158,6 @@ public class ca1DSim extends JFrame
             d.setVisible(true);
         }
     };
-
 
     private JPanel crearPanelBotones()
     {
@@ -147,14 +192,15 @@ public class ca1DSim extends JFrame
         layout.putConstraint(SpringLayout.NORTH, label2, 30, SpringLayout.NORTH, ch);
 
 
-        JComboBox combo = new JComboBox();
+        JComboBox<String> combo = new JComboBox<String>();
         for(int i = 0; i < estados.length; i++) 
             combo.addItem(estados[i]);
         combo.addActionListener(new ActionListener() 
         {
             public void actionPerformed(ActionEvent e) 
             {
-                n_estados = (int)combo.getSelectedIndex(); // 0 -> 2 estados ... 3 -> 5 estados
+                n_estados = (int)combo.getSelectedIndex() + 2; // 0 -> 2 estados ... 3 -> 5 estados
+                posibles_estados = 3 * n_estados - 2;
             }
         });
 
@@ -201,16 +247,38 @@ public class ca1DSim extends JFrame
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, spinner3, 0, SpringLayout.HORIZONTAL_CENTER, label4);
         layout.putConstraint(SpringLayout.NORTH, spinner3, 30, SpringLayout.NORTH, label4);
 
+        JLabel label5 = new JLabel("Regla:");  
+        panelBotones.add(label5);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label5, 0, SpringLayout.HORIZONTAL_CENTER, spinner3);
+        layout.putConstraint(SpringLayout.NORTH, label5, 30, SpringLayout.NORTH, spinner3);
+        JSpinner spinner4 = new JSpinner(new SpinnerNumberModel(0, 0, 10000, 1));
+        spinner4.setSize(70, 10);
+        spinner4.addChangeListener(new ChangeListener() 
+        {
+            public void stateChanged(ChangeEvent e) 
+            {
+                regla = (int)spinner4.getValue();
+                if(n_estados + 2 == 2)
+                    decimal_a_binario_2();
+                else 
+                    decimal_a_baseK();
+            }
+        });
+        
+        panelBotones.add(spinner4);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, spinner4, 0, SpringLayout.HORIZONTAL_CENTER, label5);
+        layout.putConstraint(SpringLayout.NORTH, spinner4, 30, SpringLayout.NORTH, label5);
+
         JButton b1 = new JButton("Start");
         b1.addActionListener(bl);
         panelBotones.add(b1);
         layout.putConstraint(SpringLayout.EAST, b1, -180, SpringLayout.EAST, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, b1, 60, SpringLayout.NORTH, spinner3);
+        layout.putConstraint(SpringLayout.NORTH, b1, 60, SpringLayout.NORTH, spinner4);
         JButton b2 = new JButton("Reset");
         b2.addActionListener(bl);
         panelBotones.add(b2);
         layout.putConstraint(SpringLayout.EAST, b2, -100, SpringLayout.EAST, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, b2, 60, SpringLayout.NORTH, spinner3);
+        layout.putConstraint(SpringLayout.NORTH, b2, 60, SpringLayout.NORTH, spinner4);
 
         return panelBotones;
     }
@@ -246,6 +314,7 @@ public class ca1DSim extends JFrame
         add(crearPanelBotones(), BorderLayout.EAST); //panel botones
         panel = new Puntos();
         add(panel, BorderLayout.CENTER);    
+        
     }
 
     public static void main(String args[]) 
@@ -256,4 +325,31 @@ public class ca1DSim extends JFrame
         frame.setVisible(true); 
     }
         
+
+    //automata de solo 2 estados 
+    public static void decimal_a_binario_2()
+    {
+        code = new int[8];
+        int i = 0, decimal = regla;
+
+        while(decimal > 0)
+        {
+            code[i++] = decimal % 2;
+            decimal = decimal / 2;
+        }
+    }
+
+    //automata cualquier otro caso
+    public static void decimal_a_baseK()
+    {
+        code = new int[posibles_estados];
+        int i = 0, decimal = regla;
+
+        while(decimal > 0)
+        {
+            code[i++] = decimal % n_estados;
+            decimal = decimal / n_estados;
+        }
+        System.out.println("Regla: " +Arrays.toString(code));
+    }
 }
