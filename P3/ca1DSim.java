@@ -11,34 +11,62 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import java.util.concurrent.ThreadLocalRandom;
 
 
 public class ca1DSim extends JFrame 
 {
-    private static int conf_escogida;
+    private static int tam = 30;
+    private static int conf_escogida = 0;  //0 -> aleatoria || 1 -> central
     private static int n_generaciones;
     private static int n_vecinos = 1;
     private static int n_estados;
     private static int regla;
     private static int posibles_estados = 3 * n_estados - 2;
     private static int[] code;
-    private static int[] t_1 = {0,0,0,1,0,0,0}, actual = {0,0,0,1,0,0,0};
+    private static int[] t_1 = new int[tam], actual = new int[tam];
     private static JPanel panel;
     private static Graphics g;
 
+    public static void rellenar_vectores()
+    {
+        ThreadLocalRandom tlr = ThreadLocalRandom.current();
+        //aleatoria
+        if( conf_escogida == 0 )
+        {
+            for( int i = 0; i < tam; i++ )
+            {
+                t_1[i] = actual[i] = tlr.nextInt(0, n_estados);
+            }
+        }
+        //central
+        if( conf_escogida == 1 )
+        {
+            for( int i = 0; i < tam; i++ )
+            {
+                if( i == tam/2 )
+                    t_1[i] = actual[i] = 1;
+                else 
+                    t_1[i] = actual[i] = 0;
+            }
+        }
+        //System.out.println("VECTORES RELLENOS: " + Arrays.toString(actual));
+    }
+
     public static void calcular_estado_actual()
     {
+        rellenar_vectores();
         int sumatorio;
-        for(int k = 0; k < n_generaciones; k++)
+        for( int k = 0; k < n_generaciones; k++ )
         {
-            for(int i = 0; i < actual.length; i++)
+            for( int i = 0; i < actual.length; i++ )
             {
                 sumatorio = 0;
-                for(int j = i-n_vecinos; j <= i+n_vecinos; j++)
+                for( int j = i-n_vecinos; j <= i+n_vecinos; j++ )
                 {
-                    if(j < 0)
+                    if( j < 0 )
                         sumatorio += t_1[t_1.length+j];
-                    else if(j > t_1.length-1) 
+                    else if( j > t_1.length-1 ) 
                         sumatorio += t_1[j-t_1.length];
                     else 
                         sumatorio += t_1[j];
@@ -46,18 +74,15 @@ public class ca1DSim extends JFrame
                 //System.out.println(sumatorio);
                 actual[i] = code[sumatorio % posibles_estados]; //para que no se salga del vector
             }
-            for(int i = 0; i < actual.length; i++)
+            for( int i = 0; i < actual.length; i++ )
                 t_1[i] = actual[i];
             System.out.println(Arrays.toString(actual));
         }
     }
+
     public static void reset()
     {
-        int[] aux = {0,0,0,1,0,0,0};
-        for(int i = 0; i < aux.length; i++)
-                t_1[i] = aux[i];
-        for(int i = 0; i < aux.length; i++)
-                actual[i] = aux[i];
+        rellenar_vectores();
     }
 
     private static String menus[] = 
@@ -165,31 +190,42 @@ public class ca1DSim extends JFrame
         SpringLayout layout = new SpringLayout();
         panelBotones.setLayout(layout);
         panelBotones.setPreferredSize( new Dimension( 340, 280 ) );
-        Choice ch = new Choice();
+        ButtonGroup grupoBotones = new ButtonGroup(); 
+        JRadioButton aleatoria = new JRadioButton(configuracion[0]), central = new JRadioButton(configuracion[1]);
         JLabel label = new JLabel("Configuracion:");   
         panelBotones.add(label);   
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
         layout.putConstraint(SpringLayout.NORTH, label, 100, SpringLayout.NORTH, panelBotones);
          
-        for(int i = 0; i < configuracion.length; i++) 
-            ch.addItem(configuracion[i]);
-        
-        ch.addItemListener(new ItemListener()
+        grupoBotones.add(central); grupoBotones.add(aleatoria);
+        aleatoria.addChangeListener(new ChangeListener() 
         {
-            public void itemStateChanged(ItemEvent e)
+            public void stateChanged(ChangeEvent e) 
             {
-                conf_escogida = ch.getSelectedIndex();
+                conf_escogida = 0;
             }
         });
-
-        panelBotones.add(ch);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, ch, 0, SpringLayout.HORIZONTAL_CENTER, label);
-        layout.putConstraint(SpringLayout.NORTH, ch, 30, SpringLayout.NORTH, label);
+        central.addChangeListener(new ChangeListener() 
+        {
+            public void stateChanged(ChangeEvent e) 
+            {
+                conf_escogida = 1;
+            }
+        });
+        //panelBotones.add(grupoBotones);
+        panelBotones.add(central); panelBotones.add(aleatoria);
+        //layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, aleatoria, 0, SpringLayout.HORIZONTAL_CENTER, label);
+        layout.putConstraint(SpringLayout.NORTH, aleatoria, 30, SpringLayout.NORTH, label);
+        layout.putConstraint(SpringLayout.WEST, aleatoria, 60, SpringLayout.WEST, panelBotones);
+        
+        //layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, central, 0 , SpringLayout.HORIZONTAL_CENTER, label);
+        layout.putConstraint(SpringLayout.NORTH, central, 30, SpringLayout.NORTH, label);
+        layout.putConstraint(SpringLayout.WEST, central, 80, SpringLayout.WEST, aleatoria);
 
         JLabel label2 = new JLabel("Numero de estados por celula:");  
         panelBotones.add(label2);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label2, 0, SpringLayout.HORIZONTAL_CENTER, ch);
-        layout.putConstraint(SpringLayout.NORTH, label2, 30, SpringLayout.NORTH, ch);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label2, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
+        layout.putConstraint(SpringLayout.NORTH, label2, 50, SpringLayout.NORTH, central);
 
 
         JComboBox<String> combo = new JComboBox<String>();
