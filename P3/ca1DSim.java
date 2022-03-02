@@ -16,9 +16,9 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class ca1DSim extends JFrame 
 {
-    private static int tam = 30;
+    private static int tam = 700;
     private static int conf_escogida = 0;  //0 -> aleatoria || 1 -> central
-    private static int n_generaciones;
+    private static int n_generaciones = 300;
     private static int n_vecinos = 1;
     private static int n_estados;
     private static int regla;
@@ -55,30 +55,27 @@ public class ca1DSim extends JFrame
 
     public static void calcular_estado_actual()
     {
-        rellenar_vectores();
         int sumatorio;
-        for( int k = 0; k < n_generaciones; k++ )
+        for( int i = 0; i < actual.length; i++ )
         {
-            for( int i = 0; i < actual.length; i++ )
+            sumatorio = 0;
+            for( int j = i-n_vecinos; j <= i+n_vecinos; j++ )
             {
-                sumatorio = 0;
-                for( int j = i-n_vecinos; j <= i+n_vecinos; j++ )
-                {
-                    if( j < 0 )
-                        sumatorio += t_1[t_1.length+j];
-                    else if( j > t_1.length-1 ) 
-                        sumatorio += t_1[j-t_1.length];
-                    else 
-                        sumatorio += t_1[j];
-                }
-                //System.out.println(sumatorio);
-                actual[i] = code[sumatorio % posibles_estados]; //para que no se salga del vector
+                if( j < 0 )
+                    sumatorio += t_1[t_1.length+j];
+                else if( j > t_1.length-1 ) 
+                    sumatorio += t_1[j-t_1.length];
+                else 
+                    sumatorio += t_1[j];
             }
-            for( int i = 0; i < actual.length; i++ )
-                t_1[i] = actual[i];
-            System.out.println(Arrays.toString(actual));
+            //System.out.println(sumatorio);
+            actual[i] = code[sumatorio % posibles_estados]; //para que no se salga del vector
         }
+        for( int i = 0; i < actual.length; i++ )
+            t_1[i] = actual[i];
+            //System.out.println(Arrays.toString(actual));
     }
+    
 
     public static void reset()
     {
@@ -125,13 +122,17 @@ public class ca1DSim extends JFrame
         public static Image createImageWithText() 
         {
             int ancho      = 700;
-            int alto       = 370;
+            int alto       = n_generaciones;
             BufferedImage bufferedImage = new BufferedImage( ancho, alto, BufferedImage.TYPE_INT_RGB );
             g = bufferedImage.getGraphics();
-            g.setColor(Color.BLUE);
-            int x, y;
-            int i = 0;
-            
+            g.setColor(Color.WHITE);
+            for( int i = 0; i < alto; i++)
+            {
+                for( int k = 0; k < ancho; k++)
+                {
+                    g.drawOval(k, i, 1, 1);
+                }     
+            }
             return bufferedImage;
         }
     };
@@ -148,13 +149,21 @@ public class ca1DSim extends JFrame
             {
                 Image img = Puntos.createImageWithText();
                 g.drawImage(img, 0, 0, null);
+                rellenar_vectores();
                 panel.setVisible(false);
                 panel.setVisible(true);
-                g.setColor(Color.white);
-               //generamos y pintamos puntos...
-                int i = 0, x, y;
-                calcular_estado_actual();
-                
+                //g.setColor(Color.WHITE);
+                //generamos y pintamos puntos...
+                for( int i = 0; i < n_generaciones; i++)
+                {
+                    calcular_estado_actual();
+                    //System.out.println(Arrays.toString(actual));
+                    for( int k = 0; k < actual.length; k++)
+                    {
+                        if( actual[k] == 0 ) {g.setColor(Color.BLUE);g.drawOval(k, i, 1, 1);}
+                        else {g.setColor(Color.YELLOW);g.drawOval(k, i, 1, 1);}
+                    }     
+                }
             }
             if(name.equals("Reset"))
             {
