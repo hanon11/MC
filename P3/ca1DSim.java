@@ -16,17 +16,18 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class ca1DSim extends JFrame 
 {
-    private static int tam = 700;
+    private static int tam = 800;
     private static int conf_escogida = 0;  //0 -> aleatoria || 1 -> central
-    private static int n_generaciones = 300;
+    private static int n_generaciones = 400;
     private static int n_vecinos = 1;
-    private static int n_estados;
+    private static int n_estados = 3;
     private static int regla;
     private static int posibles_estados = 3 * n_estados - 2;
     private static int[] code;
     private static int[] t_1 = new int[tam], actual = new int[tam];
     private static JPanel panel;
     private static Graphics g;
+    private static boolean centinela = true;
 
     public static void rellenar_vectores()
     {
@@ -116,22 +117,58 @@ public class ca1DSim extends JFrame
         public void paint(Graphics g) 
         {
             Image img = createImageWithText();
-            g.drawImage(img, 20,90,this);
+            g.drawImage(img, 5,90,this);
         }
 
         public static Image createImageWithText() 
         {
-            int ancho      = 700;
+            int ancho      = tam;
             int alto       = n_generaciones;
             BufferedImage bufferedImage = new BufferedImage( ancho, alto, BufferedImage.TYPE_INT_RGB );
             g = bufferedImage.getGraphics();
-            g.setColor(Color.WHITE);
-            for( int i = 0; i < alto; i++)
+            g.setColor(Color.BLACK);
+            if(centinela)
             {
-                for( int k = 0; k < ancho; k++)
+                centinela = false;
+                for( int i = 0; i < n_generaciones; i++)
                 {
-                    g.drawOval(k, i, 1, 1);
-                }     
+                    //System.out.println(Arrays.toString(actual));
+                    for( int k = 0; k < actual.length; k++)
+                    {
+                        g.setColor(Color.BLACK);g.drawOval(k, i, 1, 1);
+                    }     
+                }
+            }
+            else
+            {
+                rellenar_vectores();
+                for( int i = 0; i < n_generaciones; i++)
+                {
+                    //System.out.println(Arrays.toString(actual));
+                    for( int k = 0; k < actual.length; k++)
+                    {
+                        switch( actual[k] )
+                        {
+                        case 1:
+                            g.setColor(Color.BLUE);g.drawOval(k, i, 1, 1);
+                            break;
+                        case 2:
+                            g.setColor(Color.RED);g.drawOval(k, i, 1, 1);
+                            break;
+                        case 3:
+                            g.setColor(Color.GREEN);g.drawOval(k, i, 1, 1);
+                            break;
+                        case 4:
+                            g.setColor(Color.GRAY);g.drawOval(k, i, 1, 1);
+                            break;
+                        default:
+                            g.setColor(Color.WHITE);g.drawOval(k, i, 1, 1);
+                            break;
+
+                        }
+                    }     
+                    calcular_estado_actual();
+                }
             }
             return bufferedImage;
         }
@@ -149,21 +186,12 @@ public class ca1DSim extends JFrame
             {
                 Image img = Puntos.createImageWithText();
                 g.drawImage(img, 0, 0, null);
-                rellenar_vectores();
+                //System.out.println(Arrays.toString(actual));
                 panel.setVisible(false);
                 panel.setVisible(true);
                 //g.setColor(Color.WHITE);
                 //generamos y pintamos puntos...
-                for( int i = 0; i < n_generaciones; i++)
-                {
-                    calcular_estado_actual();
-                    //System.out.println(Arrays.toString(actual));
-                    for( int k = 0; k < actual.length; k++)
-                    {
-                        if( actual[k] == 0 ) {g.setColor(Color.BLUE);g.drawOval(k, i, 1, 1);}
-                        else {g.setColor(Color.YELLOW);g.drawOval(k, i, 1, 1);}
-                    }     
-                }
+                
             }
             if(name.equals("Reset"))
             {
@@ -171,11 +199,9 @@ public class ca1DSim extends JFrame
                 g.drawImage(img, 0, 0, null);
                 panel.setVisible(false);
                 panel.setVisible(true);
-                g.setColor(Color.white);
                //generamos y pintamos puntos...
-                int i = 0, x, y;
+                centinela = true;
                 reset();
-                
             }
         }
     }
@@ -259,7 +285,7 @@ public class ca1DSim extends JFrame
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label3, 0, SpringLayout.HORIZONTAL_CENTER, combo);
         layout.putConstraint(SpringLayout.NORTH, label3, 30, SpringLayout.NORTH, combo);
 
-        JSpinner spinner2 = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+        JSpinner spinner2 = new JSpinner(new SpinnerNumberModel(1, 1, 500, 1));
         spinner2.setSize(70, 10);
         spinner2.addChangeListener(new ChangeListener() 
         {
@@ -366,7 +392,7 @@ public class ca1DSim extends JFrame
     {
         ca1DSim frame = new ca1DSim("Automatas celulares 1-D.");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
-        frame.setSize(1000, 700);
+        frame.setSize(1200, 1000);
         frame.setVisible(true); 
     }
         
