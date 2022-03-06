@@ -12,6 +12,7 @@ import javax.swing.JSpinner;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import java.util.concurrent.ThreadLocalRandom;
+import java.math.BigInteger;
 
 
 public class ca1DSim extends JFrame 
@@ -20,7 +21,7 @@ public class ca1DSim extends JFrame
     private static int conf_escogida = 0;  //0 -> aleatoria || 1 -> central
     private static int n_generaciones = 400;
     private static int n_vecinos = 1;
-    private static int n_estados = 3;
+    private static int n_estados = 2;
     private static int regla;
     private static int posibles_estados = 3 * n_estados - 2;
     private static int[] code;
@@ -35,10 +36,20 @@ public class ca1DSim extends JFrame
         //aleatoria
         if( conf_escogida == 0 )
         {
-            for( int i = 0; i < tam; i++ )
+            BigInteger[] aleatorios = new BigInteger[tam];
+            BigInteger x0 = BigInteger.ONE;
+            for(int i = 0; i < tam; i++)
             {
-                t_1[i] = actual[i] = tlr.nextInt(0, n_estados);
+                aleatorios[i] = x0.multiply(BigInteger.valueOf(69621));
+                aleatorios[i] = aleatorios[i].mod(BigInteger.valueOf((long)(2e31 -1)));
+                x0 = aleatorios[i]; 
+                aleatorios[i] = aleatorios[i].mod( BigInteger.valueOf( n_estados - 1 ));
             }
+            for(int i = 0; i < tam; i++)
+            {
+                t_1[i] = aleatorios[i].intValue();
+            }
+            
         }
         //central
         if( conf_escogida == 1 )
@@ -50,8 +61,8 @@ public class ca1DSim extends JFrame
                 else 
                     t_1[i] = actual[i] = 0;
             }
+            System.out.println("actual: " +Arrays.toString(actual));
         }
-        //System.out.println("VECTORES RELLENOS: " + Arrays.toString(actual));
     }
 
     public static void calcular_estado_actual()
@@ -74,7 +85,7 @@ public class ca1DSim extends JFrame
         }
         for( int i = 0; i < actual.length; i++ )
             t_1[i] = actual[i];
-            //System.out.println(Arrays.toString(actual));
+        //System.out.println("actual: " + Arrays.toString(actual));
     }
     
 
@@ -186,11 +197,8 @@ public class ca1DSim extends JFrame
             {
                 Image img = Puntos.createImageWithText();
                 g.drawImage(img, 0, 0, null);
-                //System.out.println(Arrays.toString(actual));
                 panel.setVisible(false);
                 panel.setVisible(true);
-                //g.setColor(Color.WHITE);
-                //generamos y pintamos puntos...
                 
             }
             if(name.equals("Reset"))
@@ -199,7 +207,6 @@ public class ca1DSim extends JFrame
                 g.drawImage(img, 0, 0, null);
                 panel.setVisible(false);
                 panel.setVisible(true);
-               //generamos y pintamos puntos...
                 centinela = true;
                 reset();
             }
@@ -285,7 +292,7 @@ public class ca1DSim extends JFrame
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label3, 0, SpringLayout.HORIZONTAL_CENTER, combo);
         layout.putConstraint(SpringLayout.NORTH, label3, 30, SpringLayout.NORTH, combo);
 
-        JSpinner spinner2 = new JSpinner(new SpinnerNumberModel(1, 1, 500, 1));
+        JSpinner spinner2 = new JSpinner(new SpinnerNumberModel(1, 1, 700, 1));
         spinner2.setSize(70, 10);
         spinner2.addChangeListener(new ChangeListener() 
         {
@@ -329,7 +336,7 @@ public class ca1DSim extends JFrame
             public void stateChanged(ChangeEvent e) 
             {
                 regla = (int)spinner4.getValue();
-                if(n_estados + 2 == 2)
+                if(n_estados == 2)
                     decimal_a_binario_2();
                 else 
                     decimal_a_baseK();
@@ -408,6 +415,7 @@ public class ca1DSim extends JFrame
             code[i++] = decimal % 2;
             decimal = decimal / 2;
         }
+        System.out.println("Regla: " +Arrays.toString(code));
     }
 
     //automata cualquier otro caso
