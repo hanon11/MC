@@ -18,7 +18,7 @@ public class cellularAutomata1DUncertity extends JFrame
     private static int conf_escogida = 0;  //0 -> aleatoria || 1 -> central
     private static int cond_frontera = 0;  //0 -> nula || 1 -> cilindrica
     private static int n_generaciones = 400;
-    private static int n_vecinos = 1, n_estados = 2, regla, indice_hamming = 0, indice_entropia = 0;
+    private static int n_vecinos = 1, n_estados = 2, regla, indice_hamming = 0, indice_entropia = 0, celula_entropia;
     private static int posibles_estados = 3 * n_estados - 2;
     private static int[] code;
     private static int[] t_1 = new int[tam], actual = new int[tam];
@@ -267,6 +267,24 @@ public class cellularAutomata1DUncertity extends JFrame
 
     //================================================ Dibujo Entropia ====================================
 
+
+    public static double calcular_entropia_temporal()
+    {
+        int[] sumatorio = new int[n_estados];
+        for( int i = 0; i < n_generaciones; i++)
+            sumatorio[actual[celula_entropia]]++;
+
+        //aproximamos probabilidades por frecuencias...
+        double H = 0;
+        for( int i = 0; i < n_estados; i++ )
+        {
+            if( (double)sumatorio[i]/tam != 0 )
+                H += (double)sumatorio[i]/tam*logConversion( (double)sumatorio[i]/tam );
+        }
+        H = -H;
+        return H;
+    }
+
     public static double logConversion( double x ){
         return ( Math.log(x) / Math.log(2) );
     }
@@ -278,34 +296,15 @@ public class cellularAutomata1DUncertity extends JFrame
             sumatorio[actual[i]]++;
 
         //aproximamos probabilidades por frecuencias...
-        double H;
-        if (n_estados == 2)
+        double H = 0;
+        for( int i = 0; i < n_estados; i++ )
         {
-            double ceros = (double) sumatorio[0] / tam;
-            double unos  = (double) sumatorio[1] / tam;
-            H   = -((ceros*logConversion(ceros))+(unos*logConversion(unos)));
-        }else if( n_estados == 3 ) {
-            double ceros   = (double)sumatorio[0] / tam;
-            double unos    = (double)sumatorio[1] / tam;
-            double dos     = (double)sumatorio[2] / tam;
-            H   = -((ceros*logConversion(ceros))+(unos*logConversion(unos))+(dos*logConversion(dos)));
-        }else if( n_estados == 4 ) {
-            double ceros   = (double)sumatorio[0] / tam;
-            double unos    = (double)sumatorio[1] / tam;
-            double dos     = (double)sumatorio[2] / tam;
-            double tres    = (double)sumatorio[3] / tam;
-            H   = -((ceros*logConversion(ceros))+(unos*logConversion(unos))+(dos*logConversion(dos))+(tres*logConversion(tres)));
-        }else
-        {
-            double ceros   = (double)sumatorio[0]/tam;
-            double unos    = (double)sumatorio[1]/tam;
-            double dos     = (double)sumatorio[2]/tam;
-            double tres    = (double)sumatorio[3]/tam;
-            double cuatro  = (double)sumatorio[4]/tam;
-            H   = -((ceros*logConversion(ceros))+(unos*logConversion(unos))+(dos*logConversion(dos))+(tres*logConversion(tres))+(cuatro*logConversion(cuatro)));
+            if( (double)sumatorio[i]/tam != 0 )
+                H += (double)sumatorio[i]/tam*logConversion( (double)sumatorio[i]/tam );
         }
+        H = -H;
 
-        entropia[indice_entropia] = H*200;
+        entropia[indice_entropia] = H*300;
         if( indice_entropia < entropia.length-1 )
             indice_entropia++;
     }
@@ -340,7 +339,6 @@ public class cellularAutomata1DUncertity extends JFrame
 
         public Image createImageWithText3()
         {
-            System.out.println(Arrays.toString(entropia));
             dat = entropia;
             puntos = dat.length;
             Xdat = new int[puntos];
@@ -404,10 +402,18 @@ public class cellularAutomata1DUncertity extends JFrame
                 if(pintarEntropia)
                 {
                     JDialog d = new JDialog(f, "Entropia espacial");
-                    JLabel l = new JLabel("Max: " + Arrays.stream(entropia).max().getAsDouble() + " Min: " + Arrays.stream(entropia).min().getAsDouble() );
-                    d.add(l,BorderLayout.NORTH);
-                    d.add(new grafEntropia());
+                    JLabel l = new JLabel("Max: " + Arrays.stream(entropia).max().getAsDouble()/300 + " Min: " + Arrays.stream(entropia).min().getAsDouble()/300 );
+                    d.add( l,BorderLayout.NORTH );
+                    d.add( new grafEntropia() );
                     d.setSize(800, 850);
+                    d.setVisible(true);
+                }
+                if(pintaCelula)
+                {
+                    JDialog d = new JDialog(f, "Entropia temporal");
+                    JLabel l = new JLabel("" + calcular_entropia_temporal());
+                    d.add( l, BorderLayout.CENTER );
+                    d.setSize(200, 250);
                     d.setVisible(true);
                 }
 
@@ -565,17 +571,24 @@ public class cellularAutomata1DUncertity extends JFrame
         layout.putConstraint(SpringLayout.NORTH, checkEntropia, 30, SpringLayout.NORTH, checkHamming);
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, checkCelula, 0, SpringLayout.HORIZONTAL_CENTER, checkEntropia);
         layout.putConstraint(SpringLayout.NORTH, checkCelula, 30, SpringLayout.NORTH, checkEntropia);
+        JSpinner spinner5 = new JSpinner(new SpinnerNumberModel(0, 0, tam, 1));
+        spinner4.setSize(70, 10);
+        spinner4.addChangeListener(e -> celula_entropia = (int)spinner5.getValue());
+        panelBotones.add(spinner5);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, spinner5, 0, SpringLayout.HORIZONTAL_CENTER, checkCelula);
+        layout.putConstraint(SpringLayout.NORTH, spinner5, 30, SpringLayout.NORTH, checkCelula);
+
 
         JButton b1 = new JButton("Start");
         b1.addActionListener(bl);
         panelBotones.add(b1);
         layout.putConstraint(SpringLayout.EAST, b1, -180, SpringLayout.EAST, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, b1, 60, SpringLayout.NORTH, checkEntropia);
+        layout.putConstraint(SpringLayout.NORTH, b1, 60, SpringLayout.NORTH, spinner5);
         JButton b2 = new JButton("Reset");
         b2.addActionListener(bl);
         panelBotones.add(b2);
         layout.putConstraint(SpringLayout.EAST, b2, -100, SpringLayout.EAST, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, b2, 60, SpringLayout.NORTH, checkEntropia);
+        layout.putConstraint(SpringLayout.NORTH, b2, 60, SpringLayout.NORTH, spinner5);
 
         return panelBotones;
     }
