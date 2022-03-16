@@ -635,7 +635,7 @@ public class cellularAutomata1DUncertity extends JFrame
     }
 
 
-    //automata de solo 2 estados
+    //automata de solo 2 estados 
     public static void decimal_a_binario_2()
     {
         code = new int[8];
