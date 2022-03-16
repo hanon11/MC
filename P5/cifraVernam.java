@@ -11,7 +11,8 @@ public class cifraVernam{
   }//miXOR
 
   public static void main(String[] args){
-    //generadores aleatorios para obtener la cadena aleatoria de bits de cifrado, uno para cifrar y otro para descifrar; deben reproducir exactamente la misma secuencia...
+    //generadores aleatorios para obtener la cadena aleatoria de bits de cifrado, uno para cifrar y otro para descifrar; 
+    //deben reproducir exactamente la misma secuencia...
     //para ello, monto dos generadores cebados con la misma semilla inicial...
     Random bitDeCifrado     = new Random(10);
     Random bitDeDescifrado  = new Random(10);
