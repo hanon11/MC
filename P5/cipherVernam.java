@@ -24,7 +24,7 @@ public class cipherVernam extends JFrame
                         198, 201, 202, 203, 210, 211, 213, 214, 217, 218, 219};
     private static JFrame f;
     private static String password;
-    private static Vector password_en_ASCII = new Vector(), binario = new Vector();
+    private static Vector password_en_ASCII = new Vector(), binario = new Vector(), cifrado = new Vector();
     private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
     private static String[] itemsMenu = { "Sección 1A","Sección 1B", "Sección 1C", "Ayuda" };
     private static String[] opciones = { "Opción 1A","Opción 1B", "Opción 1C" };
@@ -53,6 +53,27 @@ public class cipherVernam extends JFrame
             j++;
             while( j < 8 )
                 binario.addElement(code[j++]);
+        }
+        Vector mensaje_en_ASCII = new Vector();
+        for( int i = 0; i < mensaje.length(); i++ )
+            mensaje_en_ASCII.addElement((int)mensaje.charAt(i));
+
+        int decimal, j = 8;
+        int[] code = new int[8];
+        for (int i = 0; i < mensaje_en_ASCII.size(); i++)
+        {
+            decimal = (int)mensaje_en_ASCII.elementAt(i);
+            j = 7;
+            while(decimal > 0)
+            {
+                code[j--] = decimal % 2;
+                decimal = decimal / 2;
+            }
+            while( j >= 0 )
+                code[j--] = 0;
+            j++;
+            while( j < 8 )
+                cifrado.addElement(code[j++]);
         }
     }
   
@@ -84,7 +105,7 @@ public class cipherVernam extends JFrame
                 to_binary();
                 new int[] criptograma = new int[binario.size()];
                 for( int i = 0; i < binario.size(); i++ )
-                    criptograma[i] = miXOR(binario.elementAt(i), mensaje[i]);
+                    criptograma[i] = miXOR(binario.elementAt(i), cifrado.elementAt(i));
                 mensaje_cifrado.setText("");
             }
             if(name.equals("Limpiar"))
