@@ -28,8 +28,10 @@ public class cipherVernam extends JFrame
     private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
     private static String[] itemsMenu = { "Sección 1A","Sección 1B", "Sección 1C", "Ayuda" };
     private static String[] opciones = { "Opción 1A","Opción 1B", "Opción 1C" };
-    private static JTextField textField;
+    private static JTextField textField, mensaje, mensaje_cifrado;
     
+    public static int miXOR(int a, int b) { if(a==b)return(0);else return(1);}
+
     public static void to_binary()
     {
         for( int i = 0; i < password.length(); i++ )
@@ -80,11 +82,16 @@ public class cipherVernam extends JFrame
             {
                 password = textField.getText();
                 to_binary();
-                System.out.println(binario);
+                new int[] criptograma = new int[binario.size()];
+                for( int i = 0; i < binario.size(); i++ )
+                    criptograma[i] = miXOR(binario.elementAt(i), mensaje[i]);
+                mensaje_cifrado.setText("");
             }
             if(name.equals("Limpiar"))
             {
-                
+                textField.setText(null);
+                mensaje.setText(null);
+                mensaje_cifrado.setText(null);
             }
         }
     }
@@ -94,29 +101,31 @@ public class cipherVernam extends JFrame
     private JPanel crearPanelBotones()
     {
         JPanel panelBotones = new JPanel();
-        SpringLayout layout = new SpringLayout();
-        panelBotones.setLayout(layout);
-        
+        panelBotones.setLayout(new FlowLayout(FlowLayout.LEFT, 150,10) );
+        JLabel label = new JLabel("Regla a escoger:");
+        panelBotones.add(label);
         JComboBox combo = new JComboBox();
         for (int estado : v) combo.addItem(estado);
         combo.addActionListener(e -> regla_escogida = combo.getSelectedIndex());
         panelBotones.add(combo);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, combo, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, combo, 100, SpringLayout.NORTH, panelBotones);
-        textField = new JTextField(50);
+        JLabel label2 = new JLabel("Password:");
+        panelBotones.add(label2);
+        textField = new JTextField(30);
         panelBotones.add(textField);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, textField, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, textField, 30, SpringLayout.NORTH, combo);
+        JLabel label3 = new JLabel("Mensaje a cifrar:");
+        panelBotones.add(label3);
+        mensaje = new JTextField(30);
+        panelBotones.add(mensaje);
+        JLabel label4 = new JLabel("Mensaje cifrado:");
+        panelBotones.add(label4);
+        mensaje_cifrado = new JTextField(30);
+        panelBotones.add(mensaje_cifrado);
         JButton b1 = new JButton("Cifrar");
         b1.addActionListener(bl);
         panelBotones.add(b1);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, b1, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, b1, 30, SpringLayout.NORTH, textField);
         JButton b2 = new JButton("Limpiar");
         b2.addActionListener(bl);
         panelBotones.add(b2);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, b2, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, b2, 30, SpringLayout.NORTH, b1);
         
         return panelBotones;
     }
@@ -156,7 +165,7 @@ public class cipherVernam extends JFrame
     {
         cipherVernam frame = new cipherVernam("CIFRADO DE FLUJO CON AUTOMATAS CELULARES");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 800);
+        frame.setSize(650, 500);
         frame.setVisible(true);
     }
 }
