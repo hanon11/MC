@@ -35,18 +35,23 @@ public class cipherVernam extends JFrame
         for( int i = 0; i < password.length(); i++ )
             password_en_ASCII.addElement((int)password.charAt(i));
 
-        byte[] bytes = password_en_ASCII.getBytes();  
-        StringBuilder binary = new StringBuilder();  
-        for (byte b : bytes)  
-        {  
-            int val = b;  
-            for (int i = 0; i < 8; i++)  
-            {  
-                binary.append((val & 128) == 0 ? 0 : 1);  
-                val <<= 1;  
+        int decimal, j = 8;
+        int[] code = new int[8];
+        for (int i = 0; i < password_en_ASCII.size(); i++)
+        {
+            decimal = (int)password_en_ASCII.elementAt(i);
+            j = 7;
+            while(decimal > 0)
+            {
+                code[j--] = decimal % 2;
+                decimal = decimal / 2;
             }
-        }  
-        System.out.println(binary.toString());
+            while( j >= 0 )
+                code[j--] = 0;
+            j++;
+            while( j < 8 )
+                binario.addElement(code[j++]);
+        }
     }
   
 
