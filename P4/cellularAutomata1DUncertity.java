@@ -15,13 +15,14 @@ import java.math.BigInteger;
 public class cellularAutomata1DUncertity extends JFrame
 {
     private static int tam = 800;
-    private static int conf_escogida = 0;  //0 -> aleatoria || 1 -> central
+    private static int conf_escogida = 1;  //0 -> aleatoria || 1 -> central
     private static int cond_frontera = 0;  //0 -> nula || 1 -> cilindrica
     private static int n_generaciones = 400;
-    private static int n_vecinos = 1, n_estados = 2, regla, indice_hamming = 0, indice_entropia = 0, celula_entropia;
+    private static int n_vecinos = 1, n_estados = 2, regla, indice_hamming = 0, indice_entropia = 0, indice_entropia_celular = 0, celula_entropia = 0;
     private static int posibles_estados = 3 * n_estados - 2;
     private static int[] code;
     private static int[] t_1 = new int[tam], actual = new int[tam];
+    private static double[] entropia_celular = new double[n_generaciones-1];
     private static JPanel panel;
     private static Graphics g;
     private static boolean centinela = true;
@@ -121,14 +122,15 @@ public class cellularAutomata1DUncertity extends JFrame
         indice_hamming = 0;
         hamming = new int[n_generaciones-1];
         entropia = new double[0];
-        indice_entropia = 0;
+        indice_entropia = 0; indice_entropia_celular = 0;
         entropia = new double[n_generaciones-1];
+        entropia_celular = new double[n_generaciones-1];
         rellenar_vectores();
     }
 
     // ======================================== DIBUJO AUTOMATA ====================================================================
 
-    public class Puntos extends JPanel
+    public static class Puntos extends JPanel
     {
         public void paint(Graphics g)
         {
@@ -270,11 +272,20 @@ public class cellularAutomata1DUncertity extends JFrame
 
     public static double calcular_entropia_temporal()
     {
-        int[] sumatorio = new int[n_estados];
+        hamming = new int[0];
+        indice_hamming = 0;
+        hamming = new int[n_generaciones-1];
+        entropia = new double[0];
+        indice_entropia = 0; indice_entropia_celular = 0;
+        entropia = new double[n_generaciones-1];
+        entropia_celular = new double[n_generaciones-1];
+        rellenar_vectores();
         for( int i = 0; i < n_generaciones; i++)
-            sumatorio[actual[celula_entropia]]++;
-
-        //aproximamos probabilidades por frecuencias...
+            calcular_estado_actual();
+        
+        int[] sumatorio = new int[n_estados];
+        for( int i = 0; i < entropia_celular.length; i++)
+            sumatorio[(int)entropia_celular[i]]++;
         double H = 0;
         for( int i = 0; i < n_estados; i++ )
         {
@@ -294,7 +305,7 @@ public class cellularAutomata1DUncertity extends JFrame
         int[] sumatorio = new int[n_estados];
         for( int i = 0; i < tam; i++)
             sumatorio[actual[i]]++;
-
+        entropia_celular[indice_entropia_celular] = actual[celula_entropia];
         //aproximamos probabilidades por frecuencias...
         double H = 0;
         for( int i = 0; i < n_estados; i++ )
@@ -307,6 +318,8 @@ public class cellularAutomata1DUncertity extends JFrame
         entropia[indice_entropia] = H*300;
         if( indice_entropia < entropia.length-1 )
             indice_entropia++;
+        if( indice_entropia_celular < entropia_celular.length-1 )
+            indice_entropia_celular++;
     }
 
     public static class grafEntropia extends JPanel
@@ -416,7 +429,11 @@ public class cellularAutomata1DUncertity extends JFrame
                     d.setSize(200, 250);
                     d.setVisible(true);
                 }
-
+                hamming = new int[n_generaciones-1];
+                indice_entropia = 0; indice_entropia_celular = 0;
+                indice_hamming = 0;
+                entropia = new double[n_generaciones-1];
+                entropia_celular = new double[n_generaciones-1];
             }
             if(name.equals("Reset"))
             {
@@ -518,6 +535,7 @@ public class cellularAutomata1DUncertity extends JFrame
             n_generaciones = (int)spinner2.getValue();
             hamming = new int[n_generaciones-1];
             entropia = new double[n_generaciones-1];
+            entropia_celular = new double[n_generaciones-1];
         });
 
         panelBotones.add(spinner2);
@@ -572,8 +590,10 @@ public class cellularAutomata1DUncertity extends JFrame
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, checkCelula, 0, SpringLayout.HORIZONTAL_CENTER, checkEntropia);
         layout.putConstraint(SpringLayout.NORTH, checkCelula, 30, SpringLayout.NORTH, checkEntropia);
         JSpinner spinner5 = new JSpinner(new SpinnerNumberModel(0, 0, tam, 1));
-        spinner4.setSize(70, 10);
-        spinner4.addChangeListener(e -> celula_entropia = (int)spinner5.getValue());
+        spinner5.setSize(70, 10);
+        spinner5.addChangeListener(e -> {
+            celula_entropia = (int)spinner5.getValue();
+        });
         panelBotones.add(spinner5);
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, spinner5, 0, SpringLayout.HORIZONTAL_CENTER, checkCelula);
         layout.putConstraint(SpringLayout.NORTH, spinner5, 30, SpringLayout.NORTH, checkCelula);
