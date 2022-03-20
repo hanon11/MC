@@ -1,134 +1,157 @@
 import java.util.*;
-import java.math.BigInteger;
+import java.io.*;
+import java.util.Vector;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import java.util.*;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JSpinner;
 
-public class cipherVernam
+public class cipherVernam extends JFrame
 {
-    private static int n_vecinos = 1, n_estados = 2, n_celulas = 1024, generaciones = 1000, regla, celula_entropia = 499, 
-        indice_entropia = 0, indice_hamming = 0, indice_temporal = 0;
-    private static int[] t_1 = new int[n_celulas], actual = new int[n_celulas], code, hamming = new int[generaciones-1];
-    private static double[] entropia = new double[generaciones-1];
-    private static double[] entropia_celular = new double[generaciones-1];
+    private static int n_celulas = 512, regla_escogida=0;
+    private static int[] v = {2, 3, 5, 6, 9, 10, 11, 18, 19, 21, 22, 25, 26, 27, 34, 35, 37, 38, 
+                        41, 42, 43, 50, 51, 53, 54, 57, 58, 59, 66, 67, 69, 70, 73, 74, 75, 82, 83, 
+                        85, 86, 89, 90, 91, 98, 99, 101, 102, 105, 106, 107, 114, 115, 117, 118, 121, 122, 
+                        123, 130, 131, 133, 134, 137, 138, 139, 146, 147, 149, 150, 153, 154, 155, 162, 
+                        163, 165, 166, 169, 170, 171, 178, 179, 181, 182, 185, 186, 187, 194, 195, 197, 
+                        198, 201, 202, 203, 210, 211, 213, 214, 217, 218, 219};
+    private static JFrame f;
+    private static String password;
+    private static Vector password_en_ASCII = new Vector(), binario = new Vector();
+    private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
+    private static String[] itemsMenu = { "Sección 1A","Sección 1B", "Sección 1C", "Ayuda" };
+    private static String[] opciones = { "Opción 1A","Opción 1B", "Opción 1C" };
+    private static JTextField textField;
     
-    public static void calcular_estado_actual()
+    public static void to_binary()
     {
-        int sumatorio = 0;
-        for( int i = 0; i < actual.length; i++ )
-        {
-            sumatorio = 0;
-            for( int j = i-n_vecinos; j <= i+n_vecinos; j++ )
-            {
-                if( j < 0 || j > t_1.length-1 )
-                    sumatorio += 0;
-                else
-                    sumatorio += t_1[j];
+        for( int i = 0; i < password.length(); i++ )
+            password_en_ASCII.addElement((int)password.charAt(i));
+
+        byte[] bytes = password_en_ASCII.getBytes();  
+        StringBuilder binary = new StringBuilder();  
+        for (byte b : bytes)  
+        {  
+            int val = b;  
+            for (int i = 0; i < 8; i++)  
+            {  
+                binary.append((val & 128) == 0 ? 0 : 1);  
+                val <<= 1;  
             }
-            
-            actual[i] = code[sumatorio % 8]; //para que no se salga del vector
-        }
-        calcular_distancia_hamming();
-        calcular_entropia();
-        System.arraycopy(actual, 0, t_1, 0, actual.length);
+        }  
+        System.out.println(binary.toString());
     }
+  
 
-    public static void decimal_a_binario_2()
+    //============================================= LISTENERS =================================================
+
+    private ActionListener al = new ActionListener() //listeners del menu
     {
-        code = new int[8];
-        int i = 0, decimal = regla;
-
-        while(decimal > 0 && i < 8)
+        public void actionPerformed(ActionEvent e)
         {
-            code[i++] = decimal % 2;
-            decimal = decimal / 2;
+            String name =  ((JMenuItem)e.getSource()).getText();
+            JDialog d = new JDialog(f, name);
+            JLabel l = new JLabel(name);
+            d.add(l);
+            d.setSize(300, 150);
+            d.setVisible(true);
         }
-    }
-
-    public static void rellenar_vectores()
+    };
+    private ButtonListener bl = new ButtonListener();
+    //crea nuevo JDialog por cada boton
+    class ButtonListener implements ActionListener //listeners de los botones
     {
-        BigInteger[] aleatorios = new BigInteger[n_celulas];
-        BigInteger x0 = BigInteger.ONE;
-        for(int i = 0; i < n_celulas; i++)
+        public void actionPerformed(ActionEvent e)
         {
-            aleatorios[i] = x0.multiply(BigInteger.valueOf(69621));
-            aleatorios[i] = aleatorios[i].mod(BigInteger.valueOf((long)(2e31 -1)));
-            x0 = aleatorios[i];
-            aleatorios[i] = aleatorios[i].mod( BigInteger.valueOf( n_estados ));
+            String name = ((JButton)e.getSource()).getText();
+            if(name.equals("Cifrar"))
+            {
+                password = textField.getText();
+                to_binary();
+                System.out.println(binario);
+            }
+            if(name.equals("Limpiar"))
+            {
+                
+            }
         }
-        for(int i = 0; i < n_celulas; i++)
-            t_1[i] = aleatorios[i].intValue();
     }
 
-    public static void calcular_distancia_hamming()
+    // ======================================== PANEL BOTONES ========================================
+
+    private JPanel crearPanelBotones()
     {
-        int sumatorio = 0;
-        for( int i = 0; i < n_celulas; i++ )
-            if( t_1[i] != actual[i] )
-                sumatorio++;
-        hamming[indice_hamming] = sumatorio;
-        if( indice_hamming < hamming.length-1 )
-            indice_hamming++;
+        JPanel panelBotones = new JPanel();
+        SpringLayout layout = new SpringLayout();
+        panelBotones.setLayout(layout);
+        
+        JComboBox combo = new JComboBox();
+        for (int estado : v) combo.addItem(estado);
+        combo.addActionListener(e -> regla_escogida = combo.getSelectedIndex());
+        panelBotones.add(combo);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, combo, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
+        layout.putConstraint(SpringLayout.NORTH, combo, 100, SpringLayout.NORTH, panelBotones);
+        textField = new JTextField(50);
+        panelBotones.add(textField);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, textField, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
+        layout.putConstraint(SpringLayout.NORTH, textField, 30, SpringLayout.NORTH, combo);
+        JButton b1 = new JButton("Cifrar");
+        b1.addActionListener(bl);
+        panelBotones.add(b1);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, b1, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
+        layout.putConstraint(SpringLayout.NORTH, b1, 30, SpringLayout.NORTH, textField);
+        JButton b2 = new JButton("Limpiar");
+        b2.addActionListener(bl);
+        panelBotones.add(b2);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, b2, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
+        layout.putConstraint(SpringLayout.NORTH, b2, 30, SpringLayout.NORTH, b1);
+        
+        return panelBotones;
     }
 
-    public static double logConversion( double x ) { return ( Math.log(x) / Math.log(2) ); }
-
-    public static void calcular_entropia()
+    private JMenuBar SimpleMenus()
     {
-        int[] sumatorio = new int[n_estados];
-        for( int i = 0; i < n_celulas; i++ )
-            sumatorio[actual[i]]++;
-        entropia_celular[indice_temporal] = actual[celula_entropia];
-        //aproximamos probabilidades por frecuencias...
-        double H = 0;
-        for( int i = 0; i < n_estados; i++ )
+        JMenuBar mb = new JMenuBar();
+        JMenu menu;
+        JMenu submenu;
+        //creo los items que tienen mas de un subnivel
+        for(int i = 0; i < itemsMenu.length-1; i++)
         {
-            if( (double)sumatorio[i]/n_celulas != 0 )
-                H += (double)sumatorio[i]/n_celulas*logConversion( (double)sumatorio[i]/n_celulas );
+            menu = new JMenu(menus[i]); //creo el menu
+            submenu = new JMenu(opciones[i]); //creo el submenu
+            submenu.add(new JMenuItem(itemsMenu[i])).addActionListener(al); //al submenu le aniado el Item (este si es clickable)
+            menu.add(submenu); //aniado el submenu al menu
+            mb.add(menu); //aniado a la barra de menus todo lo anterior
         }
-        H = -H;
-
-        entropia[indice_entropia] = H*300;
-        if( indice_entropia < entropia.length-1 )
-            indice_entropia++;
-        if( indice_temporal < entropia_celular.length-1 )
-            indice_temporal++;
+        //este es el panel de acerca de-ayuda y solo tiene 1 subnivel
+        menu = new JMenu(menus[itemsMenu.length-1]);
+        menu.add(itemsMenu[itemsMenu.length-1]).addActionListener(al);
+        mb.add(menu).addActionListener(al);
+        return mb;
     }
+
+    public cipherVernam(String nombre)
+    {
+        super(nombre);
+        f = this;
+        setJMenuBar(SimpleMenus()); //crear menu
+        add(crearPanelBotones(), BorderLayout.CENTER);
+    }
+    
+
 
     public static void main( String[] args ) 
     {
-        for( int i = 0; i < 255; i++ ) //reglas
-        {
-            regla = i;
-            decimal_a_binario_2();
-            rellenar_vectores();
-            indice_entropia = 0; indice_temporal = 0; indice_hamming = 0;
-            int sumatorio_hamming = 0;
-            double sumatorio_entropia = 0, H = 0;
-            int ceros = 0, unos = 0;
-            for( int j = 0; j < generaciones; j++ )
-                calcular_estado_actual();
-            for( int j = 0; j < hamming.length; j++ )
-                sumatorio_hamming += hamming[j];
-            
-            for( int j = 0; j < entropia.length; j++ )
-                sumatorio_entropia += entropia[j];
-            
-            for( int j = 0; j < entropia_celular.length; j++ )
-            {
-                if( entropia_celular[j] == 0)
-                    ceros++;
-                else
-                    unos++;
-            }
-            if( (double)ceros != 0 )
-                H += (double)ceros/generaciones*logConversion( (double)ceros/generaciones );
-            if( (double)unos/generaciones != 0 )
-                H += (double)unos/generaciones*logConversion( (double)unos/generaciones );
-            H = -H;
-            //System.out.println(Arrays.toString(entropia_celular));
-            //System.out.println("H " + H);
-            //System.out.println("Ceros " + ceros);
-            //System.out.println("Unos " + unos);
-            if( sumatorio_hamming/generaciones > 300 && sumatorio_entropia/generaciones > 0.8 && H > 0.8 )
-                System.out.println("Regla " + i);
-        }
+        cipherVernam frame = new cipherVernam("CIFRADO DE FLUJO CON AUTOMATAS CELULARES");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 800);
+        frame.setVisible(true);
     }
 }
