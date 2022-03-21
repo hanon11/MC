@@ -4,38 +4,77 @@ import java.util.Vector;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import java.util.*;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JSpinner;
 
 public class cipherVernam extends JFrame
 {
-    private static int n_celulas = 512, regla_escogida=0;
+    private static int n_celulas = 512, regla_escogida = 2, celula_central = 256, n_vecinos = 1;
+    private static Vector password_en_ASCII = new Vector(), password_binario = new Vector(), mensaje_en_binario = new Vector(),
+            cifrado = new Vector();
     private static int[] v = {2, 3, 5, 6, 9, 10, 11, 18, 19, 21, 22, 25, 26, 27, 34, 35, 37, 38, 
                         41, 42, 43, 50, 51, 53, 54, 57, 58, 59, 66, 67, 69, 70, 73, 74, 75, 82, 83, 
                         85, 86, 89, 90, 91, 98, 99, 101, 102, 105, 106, 107, 114, 115, 117, 118, 121, 122, 
                         123, 130, 131, 133, 134, 137, 138, 139, 146, 147, 149, 150, 153, 154, 155, 162, 
                         163, 165, 166, 169, 170, 171, 178, 179, 181, 182, 185, 186, 187, 194, 195, 197, 
-                        198, 201, 202, 203, 210, 211, 213, 214, 217, 218, 219};
+                        198, 201, 202, 203, 210, 211, 213, 214, 217, 218, 219}, t_1 = new int[n_celulas], actual = new int[n_celulas],
+                        evolucion_celula_central = new int[mensaje_en_binario.size()];
     private static JFrame f;
-    private static String password;
-    private static Vector password_en_ASCII = new Vector(), binario = new Vector(), cifrado = new Vector();
+    private static String password, mensaje;
     private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
     private static String[] itemsMenu = { "Sección 1A","Sección 1B", "Sección 1C", "Ayuda" };
     private static String[] opciones = { "Opción 1A","Opción 1B", "Opción 1C" };
-    private static JTextField textField, mensaje, mensaje_cifrado;
+    private static JTextField textField, text_mensaje, mensaje_cifrado;
     
     public static int miXOR(int a, int b) { if(a==b)return(0);else return(1);}
 
+    //====================================================== AUTOMATA =======================================
+    public static void rellenar_vectores()
+    {
+        for( int i = 0; i < password_binario.size(); i++ )
+            t_1[i] = (int)password_binario.elementAt(i);
+
+        for( int i = password_binario.size(); i < n_celulas; i++ )
+            t_1[i] = 0;
+        System.arraycopy(t_1, 0, actual, 0, t_1.length);
+    }
+
+    public static void calcular_estado_actual()
+    {
+        int sumatorio = 0;
+        for( int i = 0; i < actual.length; i++ )
+        {
+            sumatorio = 0;
+            for( int j = i-n_vecinos; j <= i+n_vecinos; j++ )
+            {
+                if( j < 0 || j > t_1.length-1 )
+                    sumatorio += 0;
+                else
+                    sumatorio += t_1[j];
+            }
+            actual[i] = (int)password_binario.elementAt(sumatorio % password_binario.size()); //para que no se salga del vector
+        }
+        System.arraycopy(actual, 0, t_1, 0, actual.length);
+    }
+
+    public static void automata()
+    {
+        rellenar_vectores();
+        for( int i = 0; i < mensaje_en_binario.size()-1; i++ )
+        {
+            evolucion_celula_central[i] = actual[256];
+            calcular_estado_actual();
+        }
+        //System.out.println(Arrays.toString(evolucion_celula_central));
+    }
+    //====================================================== PASAR A BINARIO =======================================
     public static void to_binary()
     {
+        password_en_ASCII.clear();
+        password_binario.clear();
+        mensaje_en_binario.clear();
         for( int i = 0; i < password.length(); i++ )
-            password_en_ASCII.addElement((int)password.charAt(i));
+            password_en_ASCII.add((int)password.charAt(i));
 
         int decimal, j = 8;
         int[] code = new int[8];
@@ -52,14 +91,14 @@ public class cipherVernam extends JFrame
                 code[j--] = 0;
             j++;
             while( j < 8 )
-                binario.addElement(code[j++]);
+                password_binario.addElement(code[j++]);
         }
         Vector mensaje_en_ASCII = new Vector();
         for( int i = 0; i < mensaje.length(); i++ )
             mensaje_en_ASCII.addElement((int)mensaje.charAt(i));
 
-        int decimal, j = 8;
-        int[] code = new int[8];
+        j = 8;
+        code = new int[8];
         for (int i = 0; i < mensaje_en_ASCII.size(); i++)
         {
             decimal = (int)mensaje_en_ASCII.elementAt(i);
@@ -73,8 +112,9 @@ public class cipherVernam extends JFrame
                 code[j--] = 0;
             j++;
             while( j < 8 )
-                cifrado.addElement(code[j++]);
+                mensaje_en_binario.addElement(code[j++]);
         }
+        evolucion_celula_central = new int[mensaje_en_binario.size()];
     }
   
 
@@ -93,8 +133,7 @@ public class cipherVernam extends JFrame
         }
     };
     private ButtonListener bl = new ButtonListener();
-    //crea nuevo JDialog por cada boton
-    class ButtonListener implements ActionListener //listeners de los botones
+    class ButtonListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -102,16 +141,35 @@ public class cipherVernam extends JFrame
             if(name.equals("Cifrar"))
             {
                 password = textField.getText();
+                mensaje = text_mensaje.getText();
                 to_binary();
-                new int[] criptograma = new int[binario.size()];
-                for( int i = 0; i < binario.size(); i++ )
-                    criptograma[i] = miXOR(binario.elementAt(i), cifrado.elementAt(i));
-                mensaje_cifrado.setText("");
+                automata();
+                System.out.println(Arrays.toString(evolucion_celula_central));
+                System.out.println(mensaje_en_binario);
+                int[] criptograma = new int[mensaje_en_binario.size()];
+                for( int i = 0; i < evolucion_celula_central.length; i++ )
+                    criptograma[i] = miXOR((int)mensaje_en_binario.elementAt(i), evolucion_celula_central[i]);
+                char[] mensaje_final = new char[criptograma.length/8];
+                int numero = 0;
+                for ( int i = 0; i < criptograma.length; i = i+8 )
+                {
+                    int j = 0;
+                    numero = 0;
+                    while ( j < 8 )
+                    {
+                        if( criptograma[i+j] == 1)
+                            numero += Math.pow( 2, 7-j );
+                        j++;
+                    }
+                    mensaje_final[i/8] = (char)numero;
+                }
+                mensaje_cifrado.setText(null);
+                mensaje_cifrado.setText(Arrays.toString(mensaje_final));
             }
             if(name.equals("Limpiar"))
             {
                 textField.setText(null);
-                mensaje.setText(null);
+                text_mensaje.setText(null);
                 mensaje_cifrado.setText(null);
             }
         }
@@ -127,7 +185,7 @@ public class cipherVernam extends JFrame
         panelBotones.add(label);
         JComboBox combo = new JComboBox();
         for (int estado : v) combo.addItem(estado);
-        combo.addActionListener(e -> regla_escogida = combo.getSelectedIndex());
+        combo.addActionListener(e -> regla_escogida = v[combo.getSelectedIndex()]);
         panelBotones.add(combo);
         JLabel label2 = new JLabel("Password:");
         panelBotones.add(label2);
@@ -135,8 +193,8 @@ public class cipherVernam extends JFrame
         panelBotones.add(textField);
         JLabel label3 = new JLabel("Mensaje a cifrar:");
         panelBotones.add(label3);
-        mensaje = new JTextField(30);
-        panelBotones.add(mensaje);
+        text_mensaje = new JTextField(30);
+        panelBotones.add(text_mensaje);
         JLabel label4 = new JLabel("Mensaje cifrado:");
         panelBotones.add(label4);
         mensaje_cifrado = new JTextField(30);
