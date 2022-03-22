@@ -1,5 +1,4 @@
 import java.util.*;
-import java.io.*;
 import java.util.Vector;
 import java.awt.*;
 import java.awt.event.*;
@@ -18,7 +17,7 @@ public class cipherVernam extends JFrame
                         123, 130, 131, 133, 134, 137, 138, 139, 146, 147, 149, 150, 153, 154, 155, 162, 
                         163, 165, 166, 169, 170, 171, 178, 179, 181, 182, 185, 186, 187, 194, 195, 197, 
                         198, 201, 202, 203, 210, 211, 213, 214, 217, 218, 219}, t_1 = new int[n_celulas], actual = new int[n_celulas],
-                        evolucion_celula_central = new int[mensaje_en_binario.size()];
+                        evolucion_celula_central = new int[mensaje_en_binario.size()], code;
     private static JFrame f;
     private static String password, mensaje;
     private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
@@ -29,6 +28,18 @@ public class cipherVernam extends JFrame
     public static int miXOR(int a, int b) { if(a==b)return(0);else return(1);}
 
     //====================================================== AUTOMATA =======================================
+    public static void decimal_a_binario_2()
+    {
+        code = new int[8];
+        int i = 0, decimal = regla_escogida;
+
+        while(decimal > 0 && i < 8)
+        {
+            code[i++] = decimal % 2;
+            decimal = decimal / 2;
+        }
+    }
+
     public static void rellenar_vectores()
     {
         for( int i = 0; i < password_binario.size(); i++ )
@@ -52,7 +63,7 @@ public class cipherVernam extends JFrame
                 else
                     sumatorio += t_1[j];
             }
-            actual[i] = (int)password_binario.elementAt(sumatorio % password_binario.size()); //para que no se salga del vector
+            actual[i] = code[sumatorio % 8]; //para que no se salga del vector
         }
         System.arraycopy(actual, 0, t_1, 0, actual.length);
     }
@@ -70,6 +81,7 @@ public class cipherVernam extends JFrame
     //====================================================== PASAR A BINARIO =======================================
     public static void to_binary()
     {
+        decimal_a_binario_2();
         password_en_ASCII.clear();
         password_binario.clear();
         mensaje_en_binario.clear();
@@ -144,8 +156,8 @@ public class cipherVernam extends JFrame
                 mensaje = text_mensaje.getText();
                 to_binary();
                 automata();
-                System.out.println(Arrays.toString(evolucion_celula_central));
-                System.out.println(mensaje_en_binario);
+                //System.out.println(Arrays.toString(evolucion_celula_central));
+                //System.out.println(mensaje_en_binario);
                 int[] criptograma = new int[mensaje_en_binario.size()];
                 for( int i = 0; i < evolucion_celula_central.length; i++ )
                     criptograma[i] = miXOR((int)mensaje_en_binario.elementAt(i), evolucion_celula_central[i]);
@@ -164,7 +176,7 @@ public class cipherVernam extends JFrame
                     mensaje_final[i/8] = (char)numero;
                 }
                 mensaje_cifrado.setText(null);
-                mensaje_cifrado.setText(Arrays.toString(mensaje_final));
+                mensaje_cifrado.setText(new String(mensaje_final));
             }
             if(name.equals("Limpiar"))
             {
