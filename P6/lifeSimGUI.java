@@ -1,5 +1,3 @@
-import java.awt.image.BufferedImage;
-import java.math.BigInteger;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -7,25 +5,25 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Image;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JSpinner;
 
 
 public class lifeSimGUI extends JFrame
 {
-    private static int n_celulas = 512, n_vecinos = 1, tam = 10, n_generaciones = 400;
+    // celula viva ==> 1 ||||||||| celula muerta ==> 0
+    private static int tam = 600, n_generaciones = 2;
     private static String[] v = {"Aleatorio","Isla de bacterias","Cañones de planeadores"};
     private static JFrame f;
     private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
     private static String[] itemsMenu = { "Sección 1A","Sección 1B", "Sección 1C", "Ayuda" };
     private static String[] opciones = { "Opción 1A","Opción 1B", "Opción 1C" };
     private static Graphics g;
-    private static JPanel panel;
-    private static int conf_escogida = 0;  //0 -> aleatoria || 1 -> islas de bacterias || cannones de planeadores
-    private static int n_estados = 2;
-    private static int posibles_estados = 3 * n_estados - 2;
-    private static int[] code = new int[posibles_estados];
+    private static Puntos panel;
+    private static int conf_escogida = 0;  //0 -> aleatoria || 1 -> islas de bacterias || 2 -> cannones de planeadores
     private static int[][] t_1 = new int[tam][tam], actual = new int[tam][tam];
     private static boolean centinela = true;
 
@@ -33,33 +31,32 @@ public class lifeSimGUI extends JFrame
     {
         switch (conf_escogida)
         {
-            case 0:
+            case 0 -> {
                 for ( int i = 0; i < tam; i++ )
                 {
                     for ( int j = 0; j < tam; j++ )
-                        t_1[i][j] = (int) Math.floor(Math.random()*(3));
-                    System.arraycopy(t_1[i], 0, actual[i], 0, tam);
+                        t_1[i][j] = (int) Math.floor(Math.random()*(2));
                 }
-                break;
-            case 1:
-                break;
-            case 2:
-                break;
+            }
+            case 1 -> {
+                   //todo islas de bacterias
+            }
+            case 2 -> {
+                //todo cannones de planeadores
+            }
+            default -> {
+
+            }
 
         }
-        for ( int i = 0; i < tam; i++ )
+        for ( int i = 0; i < tam; i++ ) //una vez hechos todos los cambios, actualizamos para la proxima iteracion
         {
-            for ( int j = 0; j < tam; j++ )
-                t_1[i][j] = 0;
             System.arraycopy(t_1[i], 0, actual[i], 0, tam);
         }
-
+        /*for(int i = 0; i < tam; i++)
+            System.out.println(Arrays.toString(t_1[i]));*/
     }
 
-    public static void calcular_estado_actual()
-    {
-
-    }
 
 
     public static void reset()
@@ -69,41 +66,101 @@ public class lifeSimGUI extends JFrame
 
     // ======================================== DIBUJO AUTOMATA ====================================================================
 
-    public static class Puntos extends JPanel {
-        public void paint(Graphics g) {
-            Image img = createImageWithText();
-            g.drawImage(img, 5, 90, this);
+    public static class Puntos extends JPanel
+    {
+        private int ancho;
+        private int alto;
+
+        //se construye el espacio de celulas, se llena aleatoriamente, y se pinta la primera vez...
+
+        public Puntos( int ancho, int alto )
+        {
+            super();
+            this.ancho = ancho;
+            this.alto  = alto;
+            repaint();
         }
 
-        public Image createImageWithText() {
-            int ancho = tam;
-            int alto = n_generaciones;
-            BufferedImage bufferedImage = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
-            g = bufferedImage.getGraphics();
-            g.setColor(Color.BLACK);
-            if ( centinela )
+        public void funcionTransicion()
+        {
+            int sumatorio;
+            for ( int i = 0; i < tam; i++ )
             {
-                centinela = false;
-                for  (int i = 0; i < n_generaciones; i++ )
+                for ( int j = 0; j < tam; j++ )
                 {
-                    for ( int k = 0; k < actual.length; k++ )
+                    sumatorio = 0;
+                    if( j > 0 )
                     {
-                        g.setColor(Color.BLACK);
-                        g.drawOval(k, i, 1, 1);
-                    }
-                }
-            } else {
-                rellenar_matrices();
-                for (int i = 0; i < n_generaciones; i++)
-                {
-                    for (int k = 0; k < actual.length; k++)
-                    {
+                        if( t_1[i][j-1] == 1)
+                            sumatorio++;
 
                     }
-                    calcular_estado_actual();
+                    if( j < tam-1 )
+                    {
+                        if( t_1[i][j+1] == 1 )
+                            sumatorio++;
+                    }
+                    if( i > 0 )
+                    {
+                        if( t_1[i-1][j] == 1)
+                            sumatorio++;
+
+                    }
+                    if( i < tam-1 )
+                    {
+                        if( t_1[i+1][j] == 1 )
+                            sumatorio++;
+                    }
+                    if( t_1[i][j] == 1 )
+                    {
+                        if( sumatorio < 2 ) //menos de dos vecinas vivas
+                            actual[i][j] = 0;
+                        if( sumatorio == 2 || sumatorio == 3 ) //dos o tres vecinas vivas
+                            actual[i][j] = 1;
+                        if( sumatorio > 3 ) //sobrepoblacion
+                            actual[i][j] = 0;
+                    }
+                    else
+                    {
+                        if( sumatorio == 3 ) //colonizacion
+                            actual[i][j] = 1;
+                    }
                 }
             }
-            return bufferedImage;
+            for ( int i = 0; i < tam; i++ ) //una vez hechos todos los cambios, actualizamos para la proxima iteracion
+            {
+                System.arraycopy(actual[i], 0, t_1[i], 0, tam);
+            }
+            repaint();
+        }
+
+        public void paintComponent(Graphics g)
+        {
+            super.paintComponent(g);
+            if ( centinela )
+            {
+                for( int i = 0; i< ancho; i++ )
+                {
+                    for (int j = 0; j < alto; j++)
+                    {
+                        g.setColor(Color.BLACK);
+                        g.drawOval(i, j, 1, 1);
+                    }
+                }
+                centinela = false;
+            } else {
+                for (int i = 0; i < ancho; i++) {
+                    for (int j = 0; j < alto; j++) {
+                        if (actual[i][j] == 0) {
+                            g.setColor(Color.BLUE);
+                            g.drawOval(i, j, 2, 2);
+                        } else {
+                            g.setColor(Color.RED);
+                            g.drawOval(i, j, 2, 2);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -118,18 +175,19 @@ public class lifeSimGUI extends JFrame
         public void actionPerformed(ActionEvent e)
         {
             String name = ((JButton) e.getSource()).getText();
-            if (name.equals("Start")) {
-                Puntos p = new Puntos();
-                Image img = p.createImageWithText();
-                g.drawImage(img, 0, 0, null);
-                panel.setVisible(false);
-                panel.setVisible(true);
+            if (name.equals("Inicio"))
+            {
+                rellenar_matrices();
+                panel.repaint();
+                for( int i = 0; i < n_generaciones; i++)
+                {
+                    panel.funcionTransicion();
+                    panel.repaint();
+                }
             }
             if (name.equals("Reset"))
             {
-                Puntos p = new Puntos();
-                Image img = p.createImageWithText();
-                g.drawImage(img, 0, 0, null);
+                panel.repaint();
                 panel.setVisible(false);
                 panel.setVisible(true);
                 centinela = true;
@@ -227,7 +285,7 @@ public class lifeSimGUI extends JFrame
         f = this;
         setJMenuBar(SimpleMenus()); //crear menu
         add(crearPanelBotones(), BorderLayout.EAST); //panel botones
-        panel = new Puntos();
+        panel = new Puntos(tam, tam);
         add(panel, BorderLayout.CENTER);
 
     }
@@ -235,7 +293,7 @@ public class lifeSimGUI extends JFrame
     public static void main(String[] args) {
         lifeSimGUI frame = new lifeSimGUI("Conway's Game of Life");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1200, 1000);
+        frame.setSize(1000, 800);
         frame.setVisible(true);
     }
 }

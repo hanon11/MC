@@ -1,5 +1,5 @@
 /*
-  Va todo sin tildes. Uso del metodo repaint() para pintar sucesivos arrays 2-D de numeros aleatorios en respuesta a un click de raton (que podría haber sido la 
+  Va todo sin tildes. Uso del metodo repaint() para pintar sucesivos arrays 2-D de numeros aleatorios en respuesta a un click de raton (que podría haber sido la
   pulsación de un botón). Esto puede aplicar con pocos cambios para simular un AC 2-D como Life, donde cada generacion calcula un nuevo estado de un array 2-D 
   segun la funcion de transicion.
 
@@ -41,7 +41,8 @@ public class usoRepaint extends JPanel implements MouseListener {
       //aqui la transicion es volver a rellenar aleatoriamente el espacio celular...
       //para implementar LIFE, esta funcion puede sustituirse por la dinamica bacteriana de LIFE...
 
-      public void funcionTransicion(){
+      public void funcionTransicion()
+      {
           for(int i=0; i<ancho; i++)
             for(int j=0; j<alto; j++)
             cells[i][j] = s.nextInt(2);
