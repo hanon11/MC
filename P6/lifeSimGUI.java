@@ -5,9 +5,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.Arrays;
+import java.awt.image.BufferedImage;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JSpinner;
 
@@ -15,7 +13,7 @@ import javax.swing.JSpinner;
 public class lifeSimGUI extends JFrame
 {
     // celula viva ==> 1 ||||||||| celula muerta ==> 0
-    private static int tam = 600, n_generaciones = 2;
+    private static int tam = 600, n_generaciones = 2, i = 0;;
     private static String[] v = {"Aleatorio","Isla de bacterias","Cañones de planeadores"};
     private static JFrame f;
     private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
@@ -26,6 +24,7 @@ public class lifeSimGUI extends JFrame
     private static int conf_escogida = 0;  //0 -> aleatoria || 1 -> islas de bacterias || 2 -> cannones de planeadores
     private static int[][] t_1 = new int[tam][tam], actual = new int[tam][tam];
     private static boolean centinela = true;
+    private static JLabel imgLab;
 
     public static void rellenar_matrices()
     {
@@ -53,8 +52,6 @@ public class lifeSimGUI extends JFrame
         {
             System.arraycopy(t_1[i], 0, actual[i], 0, tam);
         }
-        /*for(int i = 0; i < tam; i++)
-            System.out.println(Arrays.toString(t_1[i]));*/
     }
 
 
@@ -68,19 +65,25 @@ public class lifeSimGUI extends JFrame
 
     public static class Puntos extends JPanel
     {
-        private int ancho;
-        private int alto;
+        private int ancho = tam;
+        private int alto = tam;
 
-        //se construye el espacio de celulas, se llena aleatoriamente, y se pinta la primera vez...
 
-        public Puntos( int ancho, int alto )
+        public Puntos()
         {
             super();
-            this.ancho = ancho;
-            this.alto  = alto;
-            repaint();
+            this.repaint();
         }
 
+        public void generar()
+        {
+            new Thread(() -> {
+                funcionTransicion();
+                try{ Thread.sleep(300); }catch (Exception exc) {};
+                paintImmediately(panel.getBounds());
+            }).run();
+
+        }
         public void funcionTransicion()
         {
             int sumatorio;
@@ -91,9 +94,8 @@ public class lifeSimGUI extends JFrame
                     sumatorio = 0;
                     if( j > 0 )
                     {
-                        if( t_1[i][j-1] == 1)
+                        if( t_1[i][j-1] == 1 )
                             sumatorio++;
-
                     }
                     if( j < tam-1 )
                     {
@@ -131,9 +133,9 @@ public class lifeSimGUI extends JFrame
             {
                 System.arraycopy(actual[i], 0, t_1[i], 0, tam);
             }
-            repaint();
         }
 
+        @Override
         public void paintComponent(Graphics g)
         {
             super.paintComponent(g);
@@ -169,8 +171,7 @@ public class lifeSimGUI extends JFrame
     //================================================== LISTENERS BOTONES ==========================================
     private ButtonListener bl = new ButtonListener();
 
-    //crea nuevo JDialog por cada boton
-    class ButtonListener implements ActionListener //listeners de los botones
+    static class ButtonListener implements ActionListener //listeners de los botones
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -178,11 +179,9 @@ public class lifeSimGUI extends JFrame
             if (name.equals("Inicio"))
             {
                 rellenar_matrices();
-                panel.repaint();
-                for( int i = 0; i < n_generaciones; i++)
+                for (int i = 0; i < n_generaciones; i++)
                 {
-                    panel.funcionTransicion();
-                    panel.repaint();
+                    panel.generar();
                 }
             }
             if (name.equals("Reset"))
@@ -280,17 +279,19 @@ public class lifeSimGUI extends JFrame
     }
 
 
-    public lifeSimGUI(String nombre) {
+    public lifeSimGUI(String nombre)
+    {
         super(nombre);
         f = this;
         setJMenuBar(SimpleMenus()); //crear menu
         add(crearPanelBotones(), BorderLayout.EAST); //panel botones
-        panel = new Puntos(tam, tam);
+        panel = new Puntos();
         add(panel, BorderLayout.CENTER);
 
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         lifeSimGUI frame = new lifeSimGUI("Conway's Game of Life");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1000, 800);
