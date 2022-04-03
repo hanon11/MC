@@ -6,6 +6,7 @@ import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JSpinner;
 
@@ -13,7 +14,7 @@ import javax.swing.JSpinner;
 public class lifeSimGUI extends JFrame
 {
     // celula viva ==> 1 ||||||||| celula muerta ==> 0
-    private static int tam = 600, n_generaciones = 2, i = 0;;
+    private static int tam = 600, n_generaciones = 2, i = 0, numCelulasVivas;
     private static String[] v = {"Aleatorio","Isla de bacterias","Cañones de planeadores"};
     private static JFrame f;
     private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
@@ -23,11 +24,42 @@ public class lifeSimGUI extends JFrame
     private static Puntos panel;
     private static int conf_escogida = 0;  //0 -> aleatoria || 1 -> islas de bacterias || 2 -> cannones de planeadores
     private static int[][] t_1 = new int[tam][tam], actual = new int[tam][tam];
-    private static boolean centinela = true;
-    private static JLabel imgLab;
+    private static boolean centinela = true, pintarEstado, pintarPoblacion;
+    private static String[] gosper_glider_gun = {"...........................O...........",
+                                                "...........................OOOO........",
+                                                "...........O................OOOO.......",
+                                                "..........O.O.....OO........O..O.....OO",
+                                                "...OO...OO...O..............OOOO.....OO",
+                                                "...OO...OO...O....O.O.OO...OOOO........",
+                                                "........OO...O.....OO...O..O...........",
+                                                "..........O.O..........O...............",
+                                                "...........O........O..O...............",
+                                                ".......................................",
+                                                "..........................O.O..........",
+                                                "............................O..........",
+                                                "........................O..............",
+                                                "..........................O............",
+                                                ".........................O.............",
+                                                ".......................................",
+                                                "...........OO..........................",
+                                                "...........OO....O.....................",
+                                                "OO......OO......OOOOO.OO...............",
+                                                "OO.....OOO.....O..OO....O..............",
+                                                "........OO.....OO........O............O",
+                                                "...........OO....O.......O..........O.O",
+                                                "...........OO............O...........OO",
+                                                "........................O........OO....",
+                                                "......................OO.........O.O...",
+                                                "...................................O...",
+                                                "...................................OO.."};
 
     public static void rellenar_matrices()
     {
+        for ( int i = 0; i < tam; i++ )
+        {
+            for ( int j = 0; j < tam; j++ )
+                t_1[i][j] = 0;
+        }
         switch (conf_escogida)
         {
             case 0 -> {
@@ -38,14 +70,73 @@ public class lifeSimGUI extends JFrame
                 }
             }
             case 1 -> {
-                   //todo islas de bacterias
-            }
-            case 2 -> {
-                //todo cannones de planeadores
-            }
-            default -> {
+                for (int i = 0; i < tam; i++) {
+                    for (int j = 6; j < tam - 6; j++) {
+                        if (j % 10 == 0 && i > 4 && i % 80 == 0) {
+                            t_1[i][j] = 1;
+                            t_1[i ][j + 2] = 1;
+                            t_1[i -1][j + 2] = 1;
+                            t_1[i +1][j + 2] = 1;
+                            t_1[i +1][j + 1] = 1;
+                        }
+                        if (j % 20 == 0 && i > 4 && i % 50 == 0) {
+                            t_1[i][j] = 1;
+                            t_1[i][j+2] = 1;
+                            t_1[i + 1][j + 1] = 1;
+                            t_1[i + 2][j - 1] = 1;
+                            t_1[i + 2][j + 1] = 1;
+                        }
+                        if (j + 50 == i && i < tam - 3 && j % 8 == 0) {
+                            t_1[i][j] = 1;
+                            t_1[i + 1][j] = 1;
+                            t_1[i + 2][j] = 1;
+                        }
+                    }
+                }
+                int x = tam / 2, y = tam / 2;
+                for (int i = 0; i < 200; i++)
+                {
+                    t_1[y][x] = 1;
+                    t_1[y+2][x] = 1;
+                    t_1[y+1][x] = 1;
+                    t_1[y][x+3] = 1;
+                    t_1[y+3][x] = 1;
+                    t_1[y+2][x+2] = 1;
+                    t_1[y++][x] = 1;
+                    t_1[y][x++] = 1;
+                }
 
             }
+            case 2 -> {
+                int y = tam/2, y4 = tam/4, y6 = tam/6;
+                int x = tam/2, x4 = tam/4, x6 = tam/6;
+                for( int i = 0; i < gosper_glider_gun.length; i++ )
+                {
+                    for( int j = 0; j < gosper_glider_gun[i].length(); j++ )
+                    {
+                        if( gosper_glider_gun[i].charAt(j) == '.' )
+                        {
+                            if( i == 0 && j == 0)
+                            {
+                                t_1[y+25][x+25] = 1;
+                                t_1[y+25][x+2+25] = 1;
+                                t_1[y+ 1+25][x+ 1+25] = 1;
+                                t_1[y+ 2+25][x + 1+25] = 1;
+                                t_1[y+2 +25][x + 1+25] = 1;
+                            }
+                            t_1[y + i][x + j] = 0;
+                            t_1[y4 + i][x4 + j] = 0;
+                            t_1[y6 + i][x6 + j] = 0;
+                        }
+                        else {
+                            t_1[y + i][x + j] = 1;
+                            t_1[y4 + i][x4 + j] = 1;
+                            t_1[y6 + i][x6 + j] = 1;
+                        }
+                    }
+                }
+            }
+            default -> {}
 
         }
         for ( int i = 0; i < tam; i++ ) //una vez hechos todos los cambios, actualizamos para la proxima iteracion
@@ -79,7 +170,7 @@ public class lifeSimGUI extends JFrame
         {
             new Thread(() -> {
                 funcionTransicion();
-                try{ Thread.sleep(300); }catch (Exception exc) {};
+                try{ Thread.sleep(30); }catch (Exception exc) {};
                 paintImmediately(panel.getBounds());
             }).run();
 
@@ -113,13 +204,33 @@ public class lifeSimGUI extends JFrame
                         if( t_1[i+1][j] == 1 )
                             sumatorio++;
                     }
+                    if( i < tam-1 && j > 0 )
+                    {
+                        if( t_1[i+1][j-1] == 1 )
+                            sumatorio++;
+                    }
+                    if( i > 0  && j < tam-1 )
+                    {
+                        if( t_1[i-1][j+1] == 1 )
+                            sumatorio++;
+                    }
+                    if( i < tam-1 && j < tam-1 )
+                    {
+                        if( t_1[i+1][j+1] == 1 )
+                            sumatorio++;
+                    }
+                    if( i > 0 && j > 0 )
+                    {
+                        if( t_1[i-1][j-1] == 1 )
+                            sumatorio++;
+                    }
                     if( t_1[i][j] == 1 )
                     {
                         if( sumatorio < 2 ) //menos de dos vecinas vivas
                             actual[i][j] = 0;
-                        if( sumatorio == 2 || sumatorio == 3 ) //dos o tres vecinas vivas
+                        else if( sumatorio == 2 || sumatorio == 3 ) //dos o tres vecinas vivas
                             actual[i][j] = 1;
-                        if( sumatorio > 3 ) //sobrepoblacion
+                        else if( sumatorio > 3 ) //sobrepoblacion
                             actual[i][j] = 0;
                     }
                     else
@@ -154,11 +265,11 @@ public class lifeSimGUI extends JFrame
                 for (int i = 0; i < ancho; i++) {
                     for (int j = 0; j < alto; j++) {
                         if (actual[i][j] == 0) {
-                            g.setColor(Color.BLUE);
+                            g.setColor(Color.BLACK);
                             g.drawOval(i, j, 2, 2);
                         } else {
-                            g.setColor(Color.RED);
-                            g.drawOval(i, j, 2, 2);
+                            g.setColor(Color.GREEN);
+                            g.drawOval(i, j, 5, 5);
                         }
                     }
                 }
@@ -182,6 +293,15 @@ public class lifeSimGUI extends JFrame
                 for (int i = 0; i < n_generaciones; i++)
                 {
                     panel.generar();
+                }
+                if(pintarEstado)
+                {
+                    JDialog d = new JDialog(f, "Evolucion grafica del estado de la reticula");
+                    //JLabel l = new JLabel("Max: " + Arrays.stream(hamming).max().getAsInt() + " Min: " + Arrays.stream(hamming).min().getAsInt() );
+                    //d.add(l,BorderLayout.NORTH);
+                    //d.add(new cellularAutomata1DUncertity.grafHamming());
+                    d.setSize(800, 850);
+                    d.setVisible(true);
                 }
             }
             if (name.equals("Reset"))
@@ -243,18 +363,26 @@ public class lifeSimGUI extends JFrame
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, spinner2, 0, SpringLayout.HORIZONTAL_CENTER, label3);
         layout.putConstraint(SpringLayout.NORTH, spinner2, 30, SpringLayout.NORTH, label3);
 
-
-
+        JCheckBox checkEstado = new JCheckBox("Evolucion grafica del estado de la reticula");
+        JCheckBox checkPoblacion = new JCheckBox("Curva de poblacion popular");
+        checkEstado.addChangeListener(e -> pintarEstado = checkEstado.isSelected());
+        checkPoblacion.addChangeListener(e -> pintarPoblacion = checkPoblacion.isSelected());
+        panelBotones.add(checkEstado);
+        panelBotones.add(checkPoblacion);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, checkEstado, 0, SpringLayout.HORIZONTAL_CENTER, spinner2);
+        layout.putConstraint(SpringLayout.NORTH, checkEstado, 30, SpringLayout.NORTH, spinner2);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, checkPoblacion, 0, SpringLayout.HORIZONTAL_CENTER, checkEstado);
+        layout.putConstraint(SpringLayout.NORTH, checkPoblacion, 30, SpringLayout.NORTH, checkEstado);
         JButton b1 = new JButton("Inicio");
         b1.addActionListener(bl);
         panelBotones.add(b1);
         layout.putConstraint(SpringLayout.EAST, b1, -180, SpringLayout.EAST, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, b1, 50, SpringLayout.NORTH, spinner2);
+        layout.putConstraint(SpringLayout.NORTH, b1, 60, SpringLayout.NORTH, checkEstado);
         JButton b2 = new JButton("Reset");
         b2.addActionListener(bl);
         panelBotones.add(b2);
         layout.putConstraint(SpringLayout.EAST, b2, -100, SpringLayout.EAST, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, b2, 50, SpringLayout.NORTH, spinner2);
+        layout.putConstraint(SpringLayout.NORTH, b2, 60, SpringLayout.NORTH, checkEstado);
 
         return panelBotones;
     }
