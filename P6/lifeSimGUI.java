@@ -6,15 +6,14 @@ import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import javax.swing.JSpinner;
 
 
 public class lifeSimGUI extends JFrame
 {
     // celula viva ==> 1 ||||||||| celula muerta ==> 0
-    private static int tam = 600, n_generaciones = 2, i = 0, numCelulasVivas;
+    private static int tam = 600, n_generaciones = 2, i = 0;
+    private static int[] celulasVivas = new int[tam];
     private static String[] v = {"Aleatorio","Isla de bacterias","Cañones de planeadores"};
     private static JFrame f;
     private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
@@ -177,9 +176,10 @@ public class lifeSimGUI extends JFrame
         }
         public void funcionTransicion()
         {
-            int sumatorio;
+            int sumatorio, sumTotal;
             for ( int i = 0; i < tam; i++ )
             {
+                sumTotal = 0;
                 for ( int j = 0; j < tam; j++ )
                 {
                     sumatorio = 0;
@@ -232,12 +232,14 @@ public class lifeSimGUI extends JFrame
                             actual[i][j] = 1;
                         else if( sumatorio > 3 ) //sobrepoblacion
                             actual[i][j] = 0;
+                        sumTotal++;
                     }
                     else
                     {
                         if( sumatorio == 3 ) //colonizacion
                             actual[i][j] = 1;
                     }
+                    celulasVivas[i] = sumTotal;
                 }
             }
             for ( int i = 0; i < tam; i++ ) //una vez hechos todos los cambios, actualizamos para la proxima iteracion
@@ -278,6 +280,63 @@ public class lifeSimGUI extends JFrame
     }
 
 
+    public static class grafPobCelular extends JPanel
+    {
+        private int[] dat;
+        private int puntos;
+        private int[] Xdat;
+        private int[] Ydat;
+
+        public grafPobCelular()
+        {
+            super();
+            dat = celulasVivas;
+            puntos = dat.length;
+            Xdat = new int[puntos];
+            Ydat = new int[puntos];
+            //separamos puntos para coordenadas x e y...
+            for (int i = 0; i < puntos; i++)
+            {
+                Xdat[i] = i;
+                Ydat[i] = dat[i];
+            }
+        }
+        public void paint(Graphics g)
+        {
+            Image img = createImageWithText2();
+            g.drawImage(img, 5,90,this);
+        }
+
+        public Image createImageWithText2()
+        {
+            dat = celulasVivas;
+            puntos = dat.length;
+            Xdat = new int[puntos];
+            Ydat = new int[puntos];
+            int ancho = tam;
+            int alto = tam;
+            BufferedImage bufferedImage = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
+            g = bufferedImage.getGraphics();
+            for (int i = 0; i < puntos; i++)
+            {
+                Xdat[i] = i;
+                Ydat[i] = dat[i];
+            }
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setColor(Color.BLUE);
+            g2.setStroke(new BasicStroke(3));
+
+            for (int i = 0; i < puntos-1; i++)
+            {
+                int x0 = Xdat[i];
+                int x1 = Xdat[i + 1];
+                int y0 = tam - Ydat[i];
+                int y1 = tam - Ydat[i + 1];
+                g2.drawLine( x0, y0, x1, y1 );
+            }
+            return bufferedImage;
+        }
+    }
 
     //================================================== LISTENERS BOTONES ==========================================
     private ButtonListener bl = new ButtonListener();
@@ -294,12 +353,10 @@ public class lifeSimGUI extends JFrame
                 {
                     panel.generar();
                 }
-                if(pintarEstado)
+                if(pintarPoblacion)
                 {
                     JDialog d = new JDialog(f, "Evolucion grafica del estado de la reticula");
-                    //JLabel l = new JLabel("Max: " + Arrays.stream(hamming).max().getAsInt() + " Min: " + Arrays.stream(hamming).min().getAsInt() );
-                    //d.add(l,BorderLayout.NORTH);
-                    //d.add(new cellularAutomata1DUncertity.grafHamming());
+                    d.add(new grafPobCelular());
                     d.setSize(800, 850);
                     d.setVisible(true);
                 }
@@ -363,26 +420,22 @@ public class lifeSimGUI extends JFrame
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, spinner2, 0, SpringLayout.HORIZONTAL_CENTER, label3);
         layout.putConstraint(SpringLayout.NORTH, spinner2, 30, SpringLayout.NORTH, label3);
 
-        JCheckBox checkEstado = new JCheckBox("Evolucion grafica del estado de la reticula");
+
         JCheckBox checkPoblacion = new JCheckBox("Curva de poblacion popular");
-        checkEstado.addChangeListener(e -> pintarEstado = checkEstado.isSelected());
         checkPoblacion.addChangeListener(e -> pintarPoblacion = checkPoblacion.isSelected());
-        panelBotones.add(checkEstado);
         panelBotones.add(checkPoblacion);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, checkEstado, 0, SpringLayout.HORIZONTAL_CENTER, spinner2);
-        layout.putConstraint(SpringLayout.NORTH, checkEstado, 30, SpringLayout.NORTH, spinner2);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, checkPoblacion, 0, SpringLayout.HORIZONTAL_CENTER, checkEstado);
-        layout.putConstraint(SpringLayout.NORTH, checkPoblacion, 30, SpringLayout.NORTH, checkEstado);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, checkPoblacion, 0, SpringLayout.HORIZONTAL_CENTER, spinner2);
+        layout.putConstraint(SpringLayout.NORTH, checkPoblacion, 30, SpringLayout.NORTH, spinner2);
         JButton b1 = new JButton("Inicio");
         b1.addActionListener(bl);
         panelBotones.add(b1);
         layout.putConstraint(SpringLayout.EAST, b1, -180, SpringLayout.EAST, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, b1, 60, SpringLayout.NORTH, checkEstado);
+        layout.putConstraint(SpringLayout.NORTH, b1, 60, SpringLayout.NORTH, checkPoblacion);
         JButton b2 = new JButton("Reset");
         b2.addActionListener(bl);
         panelBotones.add(b2);
         layout.putConstraint(SpringLayout.EAST, b2, -100, SpringLayout.EAST, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, b2, 60, SpringLayout.NORTH, checkEstado);
+        layout.putConstraint(SpringLayout.NORTH, b2, 60, SpringLayout.NORTH, checkPoblacion);
 
         return panelBotones;
     }
