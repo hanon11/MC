@@ -8,11 +8,10 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import javax.swing.JSpinner;
 
-
 public class belZab extends JFrame
 {
     // celula viva ==> 1 ||||||||| celula muerta ==> 0
-    private static int tam = 600, n_generaciones = 2, i = 0;
+    private static int tam = 600, n_generaciones = 2, p = 0, q = 1, indiceA = 0, indiceB = 0, indiceC = 0;
     private static int[] celulasVivas = new int[tam];
     private static JFrame f;
     private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
@@ -20,26 +19,24 @@ public class belZab extends JFrame
     private static String[] opciones = { "Opción 1A","Opción 1B", "Opción 1C" };
     private static Graphics g;
     private static Puntos panel;
-    private static int conf_escogida = 0;  //0 -> aleatoria || 1 -> islas de bacterias || 2 -> cannones de planeadores
-    private static int[][] t_1 = new int[tam][tam], actual = new int[tam][tam];
     private static boolean centinela = true, pintarEstado, pintarPoblacion;
+    private static float[][][] a = new float [tam][tam][2];
+    private static float[][][] b = new float [tam][tam][2];
+    private static float[][][] c = new float [tam][tam][2];
+    private static float[] evolA = new float [n_generaciones], evolB = new float [n_generaciones],evolC = new float [n_generaciones];
 
     public static void rellenar_matrices()
     {
         for ( int i = 0; i < tam; i++ )
         {
-            for ( int j = 0; j < tam; j++ )
-                t_1[i][j] = (int) Math.floor(Math.random()*(2));
-        }
-          
-
-        for ( int i = 0; i < tam; i++ ) //una vez hechos todos los cambios, actualizamos para la proxima iteracion
-        {
-            System.arraycopy(t_1[i], 0, actual[i], 0, tam);
+            for (int j = 0; j < tam; j++)
+            {
+                a[i][j][p] = (float)Math.random() * (1);
+                b[i][j][p] = (float) Math.random() * (1);
+                c[i][j][p] = (float) Math.random() * (1);
+            }
         }
     }
-
-
 
     public static void reset()
     {
@@ -53,7 +50,6 @@ public class belZab extends JFrame
         private int ancho = tam;
         private int alto = tam;
 
-
         public Puntos()
         {
             super();
@@ -64,83 +60,47 @@ public class belZab extends JFrame
         {
             new Thread(() -> {
                 funcionTransicion();
-                try{ Thread.sleep(30); }catch (Exception exc) {};
+                try{ Thread.sleep(1); }catch (Exception exc) {};
                 paintImmediately(panel.getBounds());
             }).run();
-
         }
+
         public void funcionTransicion()
         {
-            int sumatorio, sumTotal;
-            for ( int i = 0; i < tam; i++ )
+            float concentracionA = 0, concentracionB = 0, concentracionC = 0;
+            for ( int x = 0; x < tam ; x++ )
             {
-                sumTotal = 0;
-                for ( int j = 0; j < tam; j++ )
+                for ( int y = 0; y < tam ; y++ )
                 {
-                    sumatorio = 0;
-                    if( j > 0 )
+                    float c_a = (float)0.0;
+                    float c_b = (float)0.0;
+                    float c_c = (float)0.0;
+                    for ( int i = x - 1; i <= x + 1; i++ )
                     {
-                        if( t_1[i][j-1] == 1 )
-                            sumatorio++;
+                        for ( int j = y - 1; j <= y + 1; j++ )
+                        {
+                            c_a += a [( i + tam )% tam ][( j + tam ) % tam ][ p ];
+                            c_b += b [( i + tam )% tam ][( j + tam ) % tam ][ p ];
+                            c_c += c [( i + tam )% tam ][( j + tam ) % tam ][ p ];
+                        }
                     }
-                    if( j < tam-1 )
-                    {
-                        if( t_1[i][j+1] == 1 )
-                            sumatorio++;
-                    }
-                    if( i > 0 )
-                    {
-                        if( t_1[i-1][j] == 1)
-                            sumatorio++;
-
-                    }
-                    if( i < tam-1 )
-                    {
-                        if( t_1[i+1][j] == 1 )
-                            sumatorio++;
-                    }
-                    if( i < tam-1 && j > 0 )
-                    {
-                        if( t_1[i+1][j-1] == 1 )
-                            sumatorio++;
-                    }
-                    if( i > 0  && j < tam-1 )
-                    {
-                        if( t_1[i-1][j+1] == 1 )
-                            sumatorio++;
-                    }
-                    if( i < tam-1 && j < tam-1 )
-                    {
-                        if( t_1[i+1][j+1] == 1 )
-                            sumatorio++;
-                    }
-                    if( i > 0 && j > 0 )
-                    {
-                        if( t_1[i-1][j-1] == 1 )
-                            sumatorio++;
-                    }
-                    if( t_1[i][j] == 1 )
-                    {
-                        if( sumatorio < 2 ) //menos de dos vecinas vivas
-                            actual[i][j] = 0;
-                        else if( sumatorio == 2 || sumatorio == 3 ) //dos o tres vecinas vivas
-                            actual[i][j] = 1;
-                        else if( sumatorio > 3 ) //sobrepoblacion
-                            actual[i][j] = 0;
-                        sumTotal++;
-                    }
-                    else
-                    {
-                        if( sumatorio == 3 ) //colonizacion
-                            actual[i][j] = 1;
-                    }
-                    celulasVivas[i] = sumTotal;
+                    c_a /= 9.0;
+                    c_b /= 9.0;
+                    c_c /= 9.0;
+                    a[ x ][ y ][ q ] = c_a + c_a * ( c_b - c_c ) % 1;
+                    b[ x ][ y ][ q ] = c_b + c_b * ( c_c - c_a ) % 1;
+                    c[ x ][ y ][ q ] = c_c + c_c * ( c_a - c_b ) % 1;
+                    concentracionA += a[ x ][ y ][ q ];
+                    concentracionB += b[ x ][ y ][ q ];
+                    concentracionC += c[ x ][ y ][ q ];
                 }
             }
-            for ( int i = 0; i < tam; i++ ) //una vez hechos todos los cambios, actualizamos para la proxima iteracion
-            {
-                System.arraycopy(actual[i], 0, t_1[i], 0, tam);
-            }
+            evolA[indiceA] = concentracionA;
+            evolB[indiceB] = concentracionB;
+            evolC[indiceC] = concentracionC;
+            indiceC++;
+            indiceB++;
+            indiceA++;
         }
 
         @Override
@@ -149,53 +109,52 @@ public class belZab extends JFrame
             super.paintComponent(g);
             if ( centinela )
             {
-                for( int i = 0; i< ancho; i++ )
+                for( int i = 0; i < ancho; i++ )
                 {
-                    for (int j = 0; j < alto; j++)
+                    for ( int j = 0; j < alto; j++ )
                     {
-                        g.setColor(Color.BLACK);
-                        g.drawOval(i, j, 1, 1);
+                        g.setColor( Color.BLACK );
+                        g.drawOval( i, j, 1, 1 );
                     }
                 }
                 centinela = false;
             } else {
-                for (int i = 0; i < ancho; i++) {
-                    for (int j = 0; j < alto; j++) {
-                        if (actual[i][j] == 0) {
-                            g.setColor(Color.BLACK);
-                            g.drawOval(i, j, 2, 2);
-                        } else {
-                            g.setColor(Color.GREEN);
-                            g.drawOval(i, j, 5, 5);
-                        }
+                for (int x = 0; x < tam ; x ++)
+                {
+                    for (int y = 0; y < tam ; y ++)
+                    {
+                        Color color;
+                        if ( a[ x ][ y ][ q ] < 0.5 )
+                            color = Color.BLACK;
+                        else color = Color.WHITE;
+                        g.setColor(color);
+                        g.drawOval(x, y, 1, 1);
                     }
+                }
+                if (p == 0) {
+                    p = 1; q = 0;
+                }
+                else {
+                    p = 0; q = 1;
                 }
             }
         }
     }
 
 
-    public static class grafPobCelular extends JPanel
+    public static class grafCineticaTemporal extends JPanel
     {
         private int[] dat;
         private int puntos;
         private int[] Xdat;
         private int[] Ydat;
 
-        public grafPobCelular()
+        public grafCineticaTemporal()
         {
             super();
-            dat = celulasVivas;
-            puntos = dat.length;
-            Xdat = new int[puntos];
-            Ydat = new int[puntos];
-            //separamos puntos para coordenadas x e y...
-            for (int i = 0; i < puntos; i++)
-            {
-                Xdat[i] = i;
-                Ydat[i] = dat[i];
-            }
+            Xdat = new int[n_generaciones];
         }
+
         public void paint(Graphics g)
         {
             Image img = createImageWithText2();
@@ -204,29 +163,42 @@ public class belZab extends JFrame
 
         public Image createImageWithText2()
         {
-            dat = celulasVivas;
-            puntos = dat.length;
-            Xdat = new int[puntos];
-            Ydat = new int[puntos];
             int ancho = tam;
             int alto = tam;
             BufferedImage bufferedImage = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
             g = bufferedImage.getGraphics();
-            for (int i = 0; i < puntos; i++)
+            for (int i = 0; i < n_generaciones; i++)
             {
-                Xdat[i] = i;
-                Ydat[i] = dat[i];
+                Xdat[i] = 10*i;
             }
             Graphics2D g2 = (Graphics2D) g;
             g2.setColor(Color.BLUE);
             g2.setStroke(new BasicStroke(3));
 
-            for (int i = 0; i < puntos-1; i++)
+            for (int i = 0; i < n_generaciones-1; i++)
             {
                 int x0 = Xdat[i];
                 int x1 = Xdat[i + 1];
-                int y0 = tam - Ydat[i];
-                int y1 = tam - Ydat[i + 1];
+                int y0 = (int)evolA[i] % tam;
+                int y1 = (int)evolA[i+1] % tam;
+                g2.drawLine( x0, y0, x1, y1 );
+            }
+            g2.setColor(Color.RED);
+            for (int i = 0; i < n_generaciones-1; i++)
+            {
+                int x0 = Xdat[i];
+                int x1 = Xdat[i + 1];
+                int y0 = (int)evolB[i] % tam;
+                int y1 = (int)evolB[i+1] % tam;
+                g2.drawLine( x0, y0, x1, y1 );
+            }
+            g2.setColor(Color.GREEN);
+            for (int i = 0; i < n_generaciones-1; i++)
+            {
+                int x0 = Xdat[i];
+                int x1 = Xdat[i + 1];
+                int y0 = (int)evolC[i] % tam;
+                int y1 = (int)evolC[i+1] % tam;
                 g2.drawLine( x0, y0, x1, y1 );
             }
             return bufferedImage;
@@ -244,14 +216,13 @@ public class belZab extends JFrame
             if (name.equals("Inicio"))
             {
                 rellenar_matrices();
-                for (int i = 0; i < n_generaciones; i++)
-                {
+                for (int i = 0; i < n_generaciones; i++ )
                     panel.generar();
-                }
+
                 if(pintarPoblacion)
                 {
-                    JDialog d = new JDialog(f, "Evolucion grafica del estado de la reticula");
-                    d.add(new grafPobCelular());
+                    JDialog d = new JDialog(f, "Cinetica Temporal");
+                    d.add(new grafCineticaTemporal());
                     d.setSize(800, 850);
                     d.setVisible(true);
                 }
@@ -295,14 +266,19 @@ public class belZab extends JFrame
 
         JSpinner spinner2 = new JSpinner(new SpinnerNumberModel(1, 1, 100000, 1));
         spinner2.setSize(70, 10);
-        spinner2.addChangeListener(e -> n_generaciones = (int) spinner2.getValue());
+        spinner2.addChangeListener(e -> {
+            n_generaciones = (int) spinner2.getValue();
+            evolA = new float[n_generaciones];
+            evolB = new float[n_generaciones];
+            evolC = new float[n_generaciones];
+        });
 
         panelBotones.add(spinner2);
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, spinner2, 0, SpringLayout.HORIZONTAL_CENTER, label3);
         layout.putConstraint(SpringLayout.NORTH, spinner2, 30, SpringLayout.NORTH, label3);
 
 
-        JCheckBox checkPoblacion = new JCheckBox("Cinética Temporal");
+        JCheckBox checkPoblacion = new JCheckBox("Cinetica Temporal");
         checkPoblacion.addChangeListener(e -> pintarPoblacion = checkPoblacion.isSelected());
         panelBotones.add(checkPoblacion);
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, checkPoblacion, 0, SpringLayout.HORIZONTAL_CENTER, spinner2);
@@ -354,12 +330,9 @@ public class belZab extends JFrame
 
     public static void main(String[] args)
     {
-        belZab frame = new belZab("Modelo de la reacción química oscilante de Belousov-Zhabotinsky");
+        belZab frame = new belZab("Modelo de la reaccion quimica oscilante de Belousov-Zhabotinsky");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1000, 800);
         frame.setVisible(true);
     }
 }
-
-
-
