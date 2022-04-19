@@ -15,6 +15,7 @@ public class belZab extends JFrame
     private static int[] celulasVivas = new int[tam];
     private static JFrame f;
     private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
+    private static String[] colores = { "Blanco y negro","Azul y rojo","Verde y amarillo" };
     private static String[] itemsMenu = { "Sección 1A","Sección 1B", "Sección 1C", "Ayuda" };
     private static String[] opciones = { "Opción 1A","Opción 1B", "Opción 1C" };
     private static Graphics g;
@@ -24,6 +25,7 @@ public class belZab extends JFrame
     private static float[][][] b = new float [tam][tam][2];
     private static float[][][] c = new float [tam][tam][2];
     private static float[] evolA = new float [n_generaciones], evolB = new float [n_generaciones],evolC = new float [n_generaciones];
+    private static Color color1, color2;
 
     public static void rellenar_matrices()
     {
@@ -41,6 +43,9 @@ public class belZab extends JFrame
     public static void reset()
     {
         rellenar_matrices();
+        indiceC = 0;
+        indiceB = 0;
+        indiceA = 0;
     }
 
     // ======================================== DIBUJO AUTOMATA ====================================================================
@@ -125,9 +130,8 @@ public class belZab extends JFrame
                     {
                         Color color;
                         if ( a[ x ][ y ][ q ] < 0.5 )
-                            color = Color.BLACK;
-                        else color = Color.WHITE;
-                        g.setColor(color);
+                            g.setColor(color1);
+                        else g.setColor(color2);
                         g.drawOval(x, y, 1, 1);
                     }
                 }
@@ -215,6 +219,9 @@ public class belZab extends JFrame
             String name = ((JButton) e.getSource()).getText();
             if (name.equals("Inicio"))
             {
+                indiceC = 0;
+                indiceB = 0;
+                indiceA = 0;
                 rellenar_matrices();
                 for (int i = 0; i < n_generaciones; i++ )
                     panel.generar();
@@ -283,16 +290,42 @@ public class belZab extends JFrame
         panelBotones.add(checkPoblacion);
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, checkPoblacion, 0, SpringLayout.HORIZONTAL_CENTER, spinner2);
         layout.putConstraint(SpringLayout.NORTH, checkPoblacion, 30, SpringLayout.NORTH, spinner2);
+
+        JComboBox<String> combo = new JComboBox<>();
+        for (String col : colores) combo.addItem(col);
+        combo.addActionListener(e -> {
+            switch (combo.getSelectedIndex())
+            {
+                case 0:
+                    color1 = Color.BLACK;
+                    color2 = Color.WHITE;
+                    break;
+                case 1:
+                    color1 = Color.BLUE;
+                    color2 = Color.RED;
+                    break;
+                case 2:
+                    color1 = Color.GREEN;
+                    color2 = Color.YELLOW;
+                    break;
+                default:
+                    break;
+            }
+        });
+        panelBotones.add(combo);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, combo, 0, SpringLayout.HORIZONTAL_CENTER, checkPoblacion);
+        layout.putConstraint(SpringLayout.NORTH, combo, 30, SpringLayout.NORTH, checkPoblacion);
+
         JButton b1 = new JButton("Inicio");
         b1.addActionListener(bl);
         panelBotones.add(b1);
         layout.putConstraint(SpringLayout.EAST, b1, -180, SpringLayout.EAST, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, b1, 60, SpringLayout.NORTH, checkPoblacion);
+        layout.putConstraint(SpringLayout.NORTH, b1, 60, SpringLayout.NORTH, combo);
         JButton b2 = new JButton("Reset");
         b2.addActionListener(bl);
         panelBotones.add(b2);
         layout.putConstraint(SpringLayout.EAST, b2, -100, SpringLayout.EAST, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, b2, 60, SpringLayout.NORTH, checkPoblacion);
+        layout.putConstraint(SpringLayout.NORTH, b2, 60, SpringLayout.NORTH, combo);
 
         return panelBotones;
     }
