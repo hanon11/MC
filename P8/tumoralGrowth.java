@@ -395,12 +395,40 @@ public class tumoralGrowth extends JFrame
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, spinner2, 0, SpringLayout.HORIZONTAL_CENTER, label3);
         layout.putConstraint(SpringLayout.NORTH, spinner2, 30, SpringLayout.NORTH, label3);
 
+        JLabel label4 = new JLabel("Probabilidad de que una celula sobreviva [0-1]:");
+        panelBotones.add(label4);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label4, 0, SpringLayout.HORIZONTAL_CENTER, spinner2);
+        layout.putConstraint(SpringLayout.NORTH, label4, 40, SpringLayout.NORTH, spinner2);
+
+        JTextField textField = new JTextField(14);
+        textField.addActionListener(e ->
+        {
+            Ps = Double.parseDouble(textField.getText());
+        });
+        panelBotones.add(textField);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, textField, 0, SpringLayout.HORIZONTAL_CENTER, label4);
+        layout.putConstraint(SpringLayout.NORTH, textField, 30, SpringLayout.NORTH, label4);
+
+        JLabel label5 = new JLabel("Probabilidad de que una celula migre [0-1]:");
+        panelBotones.add(label5);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label5, 0, SpringLayout.HORIZONTAL_CENTER, textField);
+        layout.putConstraint(SpringLayout.NORTH, label5, 40, SpringLayout.NORTH, textField);
+
+        JTextField textField2 = new JTextField(14);
+        textField.addActionListener(e ->
+        {
+            Pm = Double.parseDouble(textField2.getText());
+        });
+        panelBotones.add(textField2);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, textField2, 0, SpringLayout.HORIZONTAL_CENTER, label5);
+        layout.putConstraint(SpringLayout.NORTH, textField2, 30, SpringLayout.NORTH, label5);
+
 
         JCheckBox checkPoblacion = new JCheckBox("Curva de poblacion popular");
         checkPoblacion.addChangeListener(e -> curvaCrecimiento = checkPoblacion.isSelected());
         panelBotones.add(checkPoblacion);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, checkPoblacion, 0, SpringLayout.HORIZONTAL_CENTER, spinner2);
-        layout.putConstraint(SpringLayout.NORTH, checkPoblacion, 30, SpringLayout.NORTH, spinner2);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, checkPoblacion, 0, SpringLayout.HORIZONTAL_CENTER, textField2);
+        layout.putConstraint(SpringLayout.NORTH, checkPoblacion, 30, SpringLayout.NORTH, textField2);
         JButton b1 = new JButton("Inicio");
         b1.addActionListener(bl);
         panelBotones.add(b1);
@@ -450,7 +478,7 @@ public class tumoralGrowth extends JFrame
     {
         tumoralGrowth frame = new tumoralGrowth("Simulacion de Crecimiento Tumoral con AC 2-D");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1000, 800);
+        frame.setSize(800, 800);
         frame.setVisible(true);
     }
 }
