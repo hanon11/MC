@@ -6,14 +6,12 @@ import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 import javax.swing.JSpinner;
-
 
 public class tumoralGrowth extends JFrame
 {
     private static int tam = 400, n_generaciones = 2, indice =0;
-    private static double Ps = 1, Pp = 0.25, NP = 1, Pm = 0.2 ,PH = 0, P1, P2,P3,P4;
+    private static double Ps = 1, Pp = 0.25, NP = 2, Pm = 0.2 ,PH = 0, P1, P2,P3,P4;
     private static int[] celulasVivas = new int[n_generaciones];
     private static JFrame f;
     private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
@@ -136,7 +134,7 @@ public class tumoralGrowth extends JFrame
                         if (rr >= Ps) //la celula muere
                             actual[i][j] = 0;
                         else {
-                            celulas++;
+                            //celulas++;
                             proliferation(i, j); //sirve tanto para proliferar como para migrar
                             if (rrp >= Pp) //no proliferacion
                             {
@@ -167,7 +165,7 @@ public class tumoralGrowth extends JFrame
                                         else
                                             actual[i][j + 1] = 1; //hija
                                     }
-                                    celulas++;
+                                    //celulas++;
                                 }
                             } else {
                                 PH++;
@@ -202,7 +200,7 @@ public class tumoralGrowth extends JFrame
                                             else
                                                 actual[i][j + 1] = 1; //hija
                                         }
-                                        celulas++;
+                                        //celulas++;
                                     }
                                 } else //proliferation
                                 {
@@ -298,13 +296,13 @@ public class tumoralGrowth extends JFrame
         public Image createImageWithText2()
         {
             Xdat = new int[puntos];
-            int ancho = tam;
+            int ancho = 5*n_generaciones;
             int alto = tam+tam;
             BufferedImage bufferedImage = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
             g = bufferedImage.getGraphics();
             for (int i = 0; i < puntos; i++)
             {
-                Xdat[i] = 3*i;
+                Xdat[i] = 5*i;
             }
             //System.out.println(Arrays.toString(celulasVivas));
             Graphics2D g2 = (Graphics2D) g;
@@ -377,11 +375,41 @@ public class tumoralGrowth extends JFrame
         panelBotones.setLayout(layout);
         panelBotones.setPreferredSize(new Dimension(340, 280));
 
+        JComboBox<String> combo = new JComboBox<>();
+        combo.addItem("A");combo.addItem("B"); combo.addItem("C");combo.addItem("D");
+        combo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int escogido = combo.getSelectedIndex();
+                Ps = 1; Pp = 0.25;
+                switch (escogido) {
+                    case 0 -> {
+                        NP = 1;
+                        Pm = 0.2;
+                    }
+                    case 1 -> {
+                        NP = 1;
+                        Pm = 0.8;
+                    }
+                    case 2 -> {
+                        NP = 2;
+                        Pm = 0.2;
+                    }
+                    case 3 -> {
+                        NP = 2;
+                        Pm = 0.8;
+                    }
+                }
+            }
+        });
+        panelBotones.add(combo);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, combo, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
+        layout.putConstraint(SpringLayout.NORTH, combo, 40, SpringLayout.NORTH, panelBotones);
 
         JLabel label3 = new JLabel("Numero de generaciones:");
         panelBotones.add(label3);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label3, 0, SpringLayout.HORIZONTAL_CENTER, panelBotones);
-        layout.putConstraint(SpringLayout.NORTH, label3, 40, SpringLayout.NORTH, panelBotones);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label3, 0, SpringLayout.HORIZONTAL_CENTER, combo);
+        layout.putConstraint(SpringLayout.NORTH, label3, 40, SpringLayout.NORTH, combo);
 
         JSpinner spinner2 = new JSpinner(new SpinnerNumberModel(1, 1, 100000, 1));
         spinner2.setSize(70, 10);
@@ -395,7 +423,7 @@ public class tumoralGrowth extends JFrame
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, spinner2, 0, SpringLayout.HORIZONTAL_CENTER, label3);
         layout.putConstraint(SpringLayout.NORTH, spinner2, 30, SpringLayout.NORTH, label3);
 
-        JLabel label4 = new JLabel("Probabilidad de que una celula sobreviva [0-1]:");
+        JLabel label4 = new JLabel("Probabilidad de que una celula sobreviva (Ps) [0-1]:");
         panelBotones.add(label4);
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label4, 0, SpringLayout.HORIZONTAL_CENTER, spinner2);
         layout.putConstraint(SpringLayout.NORTH, label4, 40, SpringLayout.NORTH, spinner2);
@@ -409,13 +437,13 @@ public class tumoralGrowth extends JFrame
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, textField, 0, SpringLayout.HORIZONTAL_CENTER, label4);
         layout.putConstraint(SpringLayout.NORTH, textField, 30, SpringLayout.NORTH, label4);
 
-        JLabel label5 = new JLabel("Probabilidad de que una celula migre [0-1]:");
+        JLabel label5 = new JLabel("Probabilidad de que una celula migre (Pm) [0-1]:");
         panelBotones.add(label5);
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label5, 0, SpringLayout.HORIZONTAL_CENTER, textField);
         layout.putConstraint(SpringLayout.NORTH, label5, 40, SpringLayout.NORTH, textField);
 
         JTextField textField2 = new JTextField(14);
-        textField.addActionListener(e ->
+        textField2.addActionListener(e ->
         {
             Pm = Double.parseDouble(textField2.getText());
         });
@@ -423,12 +451,40 @@ public class tumoralGrowth extends JFrame
         layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, textField2, 0, SpringLayout.HORIZONTAL_CENTER, label5);
         layout.putConstraint(SpringLayout.NORTH, textField2, 30, SpringLayout.NORTH, label5);
 
+        JLabel label6 = new JLabel("Probabilidad de que una celula prolifere (Pp) [0-1]:");
+        panelBotones.add(label6);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label6, 0, SpringLayout.HORIZONTAL_CENTER, textField2);
+        layout.putConstraint(SpringLayout.NORTH, label6, 40, SpringLayout.NORTH, textField2);
+
+        JTextField textField3 = new JTextField(14);
+        textField3.addActionListener(e ->
+        {
+            Pp = Double.parseDouble(textField3.getText());
+        });
+        panelBotones.add(textField3);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, textField3, 0, SpringLayout.HORIZONTAL_CENTER, label6);
+        layout.putConstraint(SpringLayout.NORTH, textField3, 30, SpringLayout.NORTH, label6);
+
+        JLabel label7 = new JLabel("Total PH que hace falta para proliferar (NP):");
+        panelBotones.add(label7);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, label7, 0, SpringLayout.HORIZONTAL_CENTER, textField3);
+        layout.putConstraint(SpringLayout.NORTH, label7, 40, SpringLayout.NORTH, textField3);
+
+        JTextField textField4 = new JTextField(14);
+        textField4.addActionListener(e ->
+        {
+            NP = Double.parseDouble(textField4.getText());
+        });
+        panelBotones.add(textField4);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, textField4, 0, SpringLayout.HORIZONTAL_CENTER, label7);
+        layout.putConstraint(SpringLayout.NORTH, textField4, 30, SpringLayout.NORTH, label7);
+
 
         JCheckBox checkPoblacion = new JCheckBox("Curva de poblacion popular");
         checkPoblacion.addChangeListener(e -> curvaCrecimiento = checkPoblacion.isSelected());
         panelBotones.add(checkPoblacion);
-        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, checkPoblacion, 0, SpringLayout.HORIZONTAL_CENTER, textField2);
-        layout.putConstraint(SpringLayout.NORTH, checkPoblacion, 30, SpringLayout.NORTH, textField2);
+        layout.putConstraint(SpringLayout.HORIZONTAL_CENTER, checkPoblacion, 0, SpringLayout.HORIZONTAL_CENTER, textField4);
+        layout.putConstraint(SpringLayout.NORTH, checkPoblacion, 30, SpringLayout.NORTH, textField4);
         JButton b1 = new JButton("Inicio");
         b1.addActionListener(bl);
         panelBotones.add(b1);
