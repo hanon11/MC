@@ -11,7 +11,7 @@ import javax.swing.JSpinner;
 public class tumoralGrowth extends JFrame
 {
     private static int tam = 400, n_generaciones = 2, indice =0;
-    private static double Ps = 1, Pp = 0.25, NP = 2, Pm = 0.2 ,PH = 0, P1, P2,P3,P4;
+    private static double Ps = 1, Pp = 0.25, NP = 1, Pm = 0.2 ,PH = 0, P1, P2,P3,P4;
     private static int[] celulasVivas = new int[n_generaciones];
     private static JFrame f;
     private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
@@ -63,7 +63,7 @@ public class tumoralGrowth extends JFrame
         {
             new Thread(() -> {
                 funcionTransicion();
-                try{ Thread.sleep(30); }catch (Exception exc) {};
+                try{ Thread.sleep(1); }catch (Exception exc) {};
                 paintImmediately(panel.getBounds());
             }).run();
 
@@ -252,7 +252,7 @@ public class tumoralGrowth extends JFrame
                 {
                     for (int j = 0; j < alto; j++)
                     {
-                        g.setColor(Color.WHITE);
+                        g.setColor(Color.BLACK);
                         g.drawOval(i, j, 1, 1);
                     }
                 }
@@ -261,10 +261,10 @@ public class tumoralGrowth extends JFrame
                 for (int i = 0; i < ancho; i++) {
                     for (int j = 0; j < alto; j++) {
                         if (actual[i][j] == 0) {
-                            g.setColor(Color.WHITE);
+                            g.setColor(Color.BLACK);
                             g.drawOval(i, j, 2, 2);
                         } else {
-                            g.setColor(Color.BLUE);
+                            g.setColor(Color.GREEN);
                             g.drawOval(i, j, 3, 3);
                         }
                     }
@@ -296,17 +296,17 @@ public class tumoralGrowth extends JFrame
         public Image createImageWithText2()
         {
             Xdat = new int[puntos];
-            int ancho = 5*n_generaciones;
+            int ancho = n_generaciones*3;
             int alto = tam+tam;
             BufferedImage bufferedImage = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
             g = bufferedImage.getGraphics();
             for (int i = 0; i < puntos; i++)
             {
-                Xdat[i] = 5*i;
+                Xdat[i] = i*3;
             }
             //System.out.println(Arrays.toString(celulasVivas));
             Graphics2D g2 = (Graphics2D) g;
-            g2.setColor(Color.BLUE);
+            g2.setColor(Color.GREEN);
             g2.setStroke(new BasicStroke(3));
             for (int i = 0; i < puntos-1; i++)
             {
