@@ -6,7 +6,7 @@ import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.*;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import javax.swing.JSpinner;
@@ -18,7 +18,7 @@ public class urmInterpreter extends JFrame
     private static String[] itemsMenu = { "Seccion 1A","Seccion 1B", "Seccion 1C", "Ayuda" };
     private static String[] opciones = { "Opcion 1A","Opcion 1B", "Opcion 1C" };
     private static Graphics g;
-
+    private static File ruta;
 
     //================================================== LISTENERS BOTONES ==========================================
     private ButtonListener bl = new ButtonListener();
@@ -48,22 +48,36 @@ public class urmInterpreter extends JFrame
         SpringLayout layout = new SpringLayout();
         panelBotones.setLayout(layout);
         panelBotones.setPreferredSize(new Dimension(340, 280));
-
+        JTextArea texto = new JTextArea(10,30);
         JButton fichero = new JButton("Selecciona fichero: ");
         fichero.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.showOpenDialog(fileChooser);
-            String ruta = fileChooser.getSelectedFile().getAbsolutePath();
-            File f = new File(ruta);
+            ruta = fileChooser.getSelectedFile();
+            String codigo = "";
+        String aux = "";
+        try {
+            if (ruta != null) {
+            FileReader archivos = new FileReader(ruta);
+            BufferedReader leer = new BufferedReader(archivos);
+            while ((aux = leer.readLine()) != null) {
+                codigo += aux + "\n";
+            }
+                leer.close();
+            }
+            } catch (IOException ex) {
+            JOptionPane.showMessageDialog(null, "Error Importando - " + ex);
+        }
+        texto.setText(codigo);
         });
         panelBotones.add(fichero);
         layout.putConstraint(SpringLayout.WEST, fichero, 10, SpringLayout.WEST, panelBotones);
         layout.putConstraint(SpringLayout.NORTH, fichero, 30, SpringLayout.NORTH, panelBotones);
-        JTextArea texto = new JTextArea();
-        texto.setBounds(10, 15, 250, 210);
         panelBotones.add(texto);
         layout.putConstraint(SpringLayout.WEST, texto, 10, SpringLayout.WEST, fichero);
         layout.putConstraint(SpringLayout.NORTH, texto, 30, SpringLayout.NORTH, fichero);
+        
+        
         JButton b1 = new JButton("Inicio");
         b1.addActionListener(bl);
         panelBotones.add(b1);
