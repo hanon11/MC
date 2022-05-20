@@ -11,67 +11,69 @@ public class urmInterpreter extends JFrame
     private static JFrame f;
     private static String[] menus = { "Opcion A","Opcion B","Opcion C", "Acerca de" };
     private static String[] itemsMenu = { "Seccion 1A","Seccion 1B", "Seccion 1C", "Ayuda" };
-    private static String[] opciones = { "Opcion 1A","Opcion 1B", "Opcion 1C" };
+    private static String[] opciones = { "Opcion 1A","Opcion 1B", "Opcion 1C" }, instruccionesPasoaPaso;
     private static File ruta;
-    private static String codigo = "";
-    private static JTextArea texto = new JTextArea(10,30);
-    private static int R1 = 0, R2 = 0, R3 = 0, numLineas = 0, lineaActual=1;
+    private static String codigo = "", traza = "";
+    private static JTextArea texto = new JTextArea(10,30), output = new JTextArea(25,30);
+    private static int R1 = 0, R2 = 0, R3 = 0,  R4 = 0, R5 = 0,numLineas = 0, lineaActual=0;
     private static JTextField registros = new JTextField();
+    private static boolean centinela = true;
 
 
     // ===================================== URM simulator =========================================
-    public static void procesar()
+    public static boolean procesarPorPasos()
     {
-        String[] instrucciones = codigo.split("\n");
-        numLineas = instrucciones.length;
-        String text = registros.getText();
-        String[] splitText = text.split(",");
-        R1 = Integer.parseInt(splitText[0]);
-        R2 = Integer.parseInt(splitText[1]);
-        //System.out.println(R1);
-        //System.out.println(R2);
-        //System.out.println(R3);
-        int i = 0;
-        while (i < numLineas)
-        {
-            switch (instrucciones[i].charAt(0)) {
-                case 'J' -> {
-
-                    if (salta(Character.getNumericValue(instrucciones[i].charAt(2)), Character.getNumericValue(instrucciones[i].charAt(4)),
-                            Character.getNumericValue(instrucciones[i].charAt(6))))
-                        if (Character.getNumericValue(instrucciones[i].charAt(6)) <= 0 || Character.getNumericValue(instrucciones[i].charAt(6)) > numLineas)
-                            return;
-                        else
-                            i=Character.getNumericValue(instrucciones[i].charAt(6))+1;
-                    else
-                        i++;
+        //System.out.println(lineaActual+1);
+        String salto = ";"; int num = 0;
+    switch (instruccionesPasoaPaso[lineaActual].charAt(0)) {
+            case 'J' -> {
+                if(Character.isDigit(instruccionesPasoaPaso[lineaActual].charAt(7))) {
+                    salto = instruccionesPasoaPaso[lineaActual].substring(6, 8);
+                    num =  Integer.parseInt(salto);
                 }
-                case 'S' -> {
-                    sucessor(Character.getNumericValue(instrucciones[i].charAt(2)));
-                    i++;
-                }
-
-                case 'Z' -> {
-                    nUll(Character.getNumericValue(instrucciones[i].charAt(2)));
-                    i++;
-                }
-                case 'T' -> {
-                    copy(Character.getNumericValue(instrucciones[i].charAt(2)),Character.getNumericValue(instrucciones[i].charAt(4)));
-                    i++;
-                }
-                default -> {
-                }
+                else num = Character.getNumericValue(instruccionesPasoaPaso[lineaActual].charAt(6));
+                if (salta(Character.getNumericValue(instruccionesPasoaPaso[lineaActual].charAt(2)), Character.getNumericValue(instruccionesPasoaPaso[lineaActual].charAt(4))))
+                    if (num <= 0 || num > numLineas)
+                        return true;
+                    else{
+                        lineaActual=num-1;
+                    }
+                else
+                    lineaActual++;
+            }
+            case 'S' -> {
+                sucessor(Character.getNumericValue(instruccionesPasoaPaso[lineaActual].charAt(2)));
+                lineaActual++;
             }
 
+            case 'Z' -> {
+                nUll(Character.getNumericValue(instruccionesPasoaPaso[lineaActual].charAt(2)));
+                lineaActual++;
+            }
+            case 'T' -> {
+                copy(Character.getNumericValue(instruccionesPasoaPaso[lineaActual].charAt(2)),Character.getNumericValue(instruccionesPasoaPaso[lineaActual].charAt(4)));
+                lineaActual++;
+            }
+            default -> {
+            }
         }
+
+        output.append("<R1="+R1+" ,R2="+R2+" , R3="+R3+" ,R4="+R4+" , R5="+R5+">\n");
+        if(lineaActual>=numLineas)
+            return true;
+        return false;
     }
+
+
 
     public static void sucessor(int reg)
     {
         switch (reg) {
-            case 1 -> {R1++; System.out.println("R1="+R1);}
-            case 2 ->{R2++; System.out.println("R2="+R2);}
-            case 3 -> {R3++; System.out.println("R3="+R3);}
+            case 1 -> {R1++; }//output.append("R1="+R1+"\n");}
+            case 2 -> {R2++; }//output.append("R2="+R2+"\n");}
+            case 3 -> {R3++; }//output.append("R3="+R3+"\n");}
+            case 4 -> {R4++; }//output.append("R2="+R2+"\n");}
+            case 5 -> {R5++; }//output.append("R3="+R3+"\n");}
             default -> {}
         }
     }
@@ -79,32 +81,39 @@ public class urmInterpreter extends JFrame
     public static void nUll(int reg)
     {
         switch (reg) {
-            case 1 -> {R1=0; System.out.println("R1=0");}
-            case 2 -> {R2=0; System.out.println("R2=0");}
-            case 3 -> {R3=0; System.out.println("R3=0");}
+            case 1 -> {R1=0; }//output.append("R1=0\n");}
+            case 2 -> {R2=0; }//output.append("R2=0\n");}
+            case 3 -> {R3=0; }//output.append("R3=0\n");}
+            case 4 -> {R4=0; }//output.append("R2=0\n");}
+            case 5 -> {R5=0; }//output.append("R3=0\n");}
             default -> {}
         }
     }
 
     public static void copy(int reg1, int reg2)
     {
-        System.out.println(reg2);
+        String s = "Copiar el valor de ";
         int numACopiar = 0;
         switch (reg1) {
-            case 1 -> numACopiar = R1;
-            case 2 -> numACopiar = R2;
-            case 3 -> numACopiar = R3;
+            case 1 -> { numACopiar = R1; s += "R1";}
+            case 2 -> { numACopiar = R2; s += "R2";}
+            case 3 -> { numACopiar = R3; s += "R3";}
+            case 4 -> { numACopiar = R4; s += "R2";}
+            case 5 -> { numACopiar = R5; s += "R3";}
             default -> {}
         }
         switch (reg2) {
-            case 1 -> R1 = numACopiar;
-            case 2 -> R2 = numACopiar;
-            case 3 -> R3 = numACopiar;
+            case 1 -> {R1 = numACopiar; s += " en el registro R1";}
+            case 2 -> {R2 = numACopiar; s += " en el registro R2";}
+            case 3 -> {R3 = numACopiar; s += " en el registro R3";}
+            case 4 -> {R4 = numACopiar; s += " en el registro R3";}
+            case 5 -> {R5 = numACopiar; s += " en el registro R3";}
             default -> {}
         }
+        //output.append(s+"\n");
     }
 
-    public static boolean salta(int reg1, int reg2, int lugar)
+    public static boolean salta(int reg1, int reg2)
     {
         boolean salto = false;
         int numAcomparar = 0;
@@ -112,6 +121,8 @@ public class urmInterpreter extends JFrame
             case 1 -> numAcomparar = R1;
             case 2 -> numAcomparar = R2;
             case 3 -> numAcomparar = R3;
+            case 4 -> numAcomparar = R4;
+            case 5 -> numAcomparar = R5;
             default -> {}
         }
         switch (reg2) {
@@ -125,6 +136,14 @@ public class urmInterpreter extends JFrame
             }
             case 3 -> {
                 if (R3 == numAcomparar)
+                    salto=true;
+            }
+            case 4 -> {
+                if (R4 == numAcomparar)
+                    salto=true;
+            }
+            case 5 -> {
+                if (R5 == numAcomparar)
                     salto=true;
             }
             default -> {}
@@ -144,16 +163,36 @@ public class urmInterpreter extends JFrame
             String name = ((JButton) e.getSource()).getText();
             if (name.equals("Inicio"))
             {
-                codigo = texto.getText();
-                procesar();
-                System.out.println(R1);
+                if (centinela){
+                    codigo = texto.getText();
+                    output.setText("");
+                    instruccionesPasoaPaso = codigo.split("\n");
+                    numLineas = instruccionesPasoaPaso.length;
+                    output.append("INICIO: <R1="+R1+" ,R2="+R2+" , R3="+R3+" ,R4="+R4+" , R5="+R5+">\n");
+                    centinela=false;
+                }
+                while (!procesarPorPasos()) {}
+                output.append("El resultado de la computacion es: "+R1);
+            }
+            if (name.equals("Step"))
+            {
+                if (centinela){
+                    codigo = texto.getText();
+                    output.setText("");
+                    instruccionesPasoaPaso = codigo.split("\n");
+                    numLineas = instruccionesPasoaPaso.length;
+                    output.append("INICIO: <R1="+R1+" ,R2="+R2+" , R3="+R3+" ,R4="+R4+" , R5="+R5+">\n");
+                    centinela=false;
+                }
+                if (procesarPorPasos())
+                    output.append("El resultado de la computacion es: "+R1);
             }
             if (name.equals("Reset"))
             {
-                //System.out.println(codigo.charAt(0));
-                R1 = 0; R2 = 0; R3 = 0; numLineas = 0;
-                codigo = ""; texto.setText(null);
+                R1 = 0; R2 = 0; R3 = 0; numLineas = 0;R4 = 0; R5 = 0;
+                codigo = ""; texto.setText(null); traza = ""; output.setText(null);
                 registros.setText("Introduce los valores de entrada separados por coma");
+                lineaActual=0; centinela = true;
             }
         }
     }
@@ -230,6 +269,18 @@ public class urmInterpreter extends JFrame
         panelBotones.add(b2);
         layout.putConstraint(SpringLayout.WEST, b2, 90, SpringLayout.WEST, panelBotones);
         layout.putConstraint(SpringLayout.NORTH, b2, 30, SpringLayout.NORTH, registros);
+        JButton b3 = new JButton("Step");
+        b3.addActionListener(bl);
+        panelBotones.add(b3);
+        layout.putConstraint(SpringLayout.WEST, b3, 180, SpringLayout.WEST, panelBotones);
+        layout.putConstraint(SpringLayout.NORTH, b3, 30, SpringLayout.NORTH, registros);
+
+        JScrollPane scroll = new JScrollPane(output);
+        output.setEditable(false);
+        output.setText("Output de la simulacion");
+        panelBotones.add(scroll);
+        layout.putConstraint(SpringLayout.WEST, scroll, 5, SpringLayout.WEST, panelBotones);
+        layout.putConstraint(SpringLayout.NORTH, scroll, 40, SpringLayout.NORTH, b2);
 
         return panelBotones;
     }
